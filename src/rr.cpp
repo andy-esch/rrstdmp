@@ -1,0 +1,119 @@
+/*
+ *   This program calculates the recurrence rate of the vectors x[] and y[],
+ *     dependent upon the window size w, overlap n, and recurrence threshold e.
+ *     Overlap values are stored in rrcntr to reduce redundant computations for
+ *     adjacent recurrence plot computations.
+ *
+ *   Output: recurrence rate (sparsity of the recurrence plot) of the 2-d map (x,y)
+ *
+ *
+ *   Limitation: if n is larger than w/2, the rrmean is incorrect because the 
+ *     overlap overlaps with more than one window -- so a different scheme
+ *     for capturing the information from other windows needs to be devised.
+ *     The program works perfectly well for n <= w/2+1, though.
+ */
+
+#include "rr.h"
+#include <cmath>
+/*  #include <omp.h>
+ *  Currently in serial form (no OpenMP).
+ *  To return to OpenMP form, uncomment the following:
+ *		#include <omp.h>
+ *		#pragma omp parallel...
+ *		int rrtemp = 0;
+ *
+ *	Change rrcntr++ in the if statement in "Applying Threshold" to rrtemp++ instead
+ */
+
+double rr(double *__restrict__ x, double *__restrict__ y, \
+		  int &__restrict__ rrcntr)
+{
+	extern int globalWindow, globalOverlap;
+	extern double ge;
+	double dx, dy, dmax;
+	int RR = rrcntr;	// Transfer previous overlap into current count
+	rrcntr = 0;			// Reset overlap for this window
+//	int rrtemp = 0;
+	static int diff = globalWindow - globalOverlap;
+	int i, j;
+	static double wsquared = static_cast<double> (globalWindow*globalWindow);
+
+//#pragma omp parallel for default(none) private(dx,dy,dmax,i,j,chx,chy) \
+//shared(x,y,diff) schedule(guided) reduction(+:RR,rrtemp)
+	for (i = globalOverlap; i < globalWindow; i++)
+	{
+		for (j = 0; j < i; j++)
+		{
+			// Calculate recurrences; check if they are on opposite edges
+			if ( (x[i] > (1.0 - ge) && x[j] < ge) )
+				dx = fabs(1.0 - x[i] + x[j]);
+			else
+				dx = fabs(x[i] - x[j]);
+
+			if ( (y[i] > (1.0 - ge) && y[j] < ge) )
+				dy = fabs(1.0 - y[i] + y[j]);
+			else
+				dy = fabs(y[i] - y[j]);
+
+			// Maximum Norm
+			dx > dy ? (dmax = dx) : (dmax = dy);
+
+			// Apply Threshold
+			if (dmax < ge)
+			{
+				RR++;
+				if ( (i > diff) && (j >= diff) )
+					rrcntr++;
+			}
+		}
+	} /*** End of Parallel Section ***/
+
+//	rrcntr = rrtemp;
+
+	return ( double(2*RR + globalWindow) / wsquared );
+}
+
+/*while (k<w/(w-n) && i > w-diff && j >= w-diff) {	// rough idea on how to implement 
+ andy												// the multiple window-overlap
+ }*/												// idea
+
+
+double rrInit(double *__restrict__ x, double *__restrict__ y, \
+			  int &__restrict__ rrcntr) 
+{
+	extern int globalWindow, globalOverlap;
+	extern double ge;
+	double dx, dy, dmax;
+	int RR = 0;
+	rrcntr = 0;
+	int diff = globalWindow - globalOverlap;
+
+	for (int i = 1; i < globalWindow; i++) 
+	{
+		for (int j = 0; j < i; j++)
+		{
+			if ( x[i] > (1.0 - ge) && x[j] < ge )
+				dx = fabs(1.0 - x[i] + x[j]);
+			else
+				dx = fabs(x[i] - x[j]);
+			
+			if ( y[i] > (1.0 - ge) && y[j] < ge )
+				dy = fabs(1.0 - y[i] + y[j]);
+			else
+				dy = fabs(y[i] - y[j]);
+
+			//maximum norm
+			dx > dy ? (dmax = dx) : (dmax = dy);
+
+			// apply threshold
+			if (dmax < ge) 
+			{
+				RR++;
+				if ( (i > diff) && (j >= diff) )
+					rrcntr++;
+			}
+		}
+	}
+
+	return (double(2*RR+globalWindow)/double(globalWindow*globalWindow));
+}
