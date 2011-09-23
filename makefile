@@ -1,5 +1,5 @@
 # makefile for rrstdmp -- a program to calculate the recurrence rate of the 
-#  standard map written by andy eschbacher, andy.eschbacher@gmail.com, Feb. 2011
+#  standard map written by andy eschbacher, Feb. 2011
 vpath %.cpp src
 vpath %.h include
 

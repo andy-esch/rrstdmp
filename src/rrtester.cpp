@@ -2,7 +2,7 @@
  *  rrtester.cpp
  *  
  *
- *  Created by Peter Eschbacher on 4/29/11.
+ *  Created by Andy Eschbacher on 4/29/11.
  *
  */
 
