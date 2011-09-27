@@ -11,20 +11,22 @@ HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h
 BLT = "--->  Making"
 SEPR = "\n\t\c"
 
-ifeq "$(MAKECMDGOALS)" "rrmapgen"
-	OBJECTS += stdmpout.o
-	HEADERS += stdmpout.h
-endif
+#ifeq "$(MAKECMDGOALS)" "rrmapgen"
+#	OBJECTS += stdmpout.o
+#	HEADERS += stdmpout.h
+#endif
 
 # =-=-=-=-=-=-=-=- make everything -=-=-=-=-=-=-=-=-= #
-.PHONY: all
-all: rrstdmp rrmapgen rrmeangen
+#.PHONY: all
+#all: rrstdmp rrmapgen rrmeangen
 
 # -=-=-=-=-=-=-=-=-=-= rrstdmp -=-=-=-=-=-=-=-=-=-=-= #
 # rrstdmp is the main program for generating and analyzing
 #   standard map recurrence rate.  Its output is a histogram
 #   of sticky events, and, if chosen, the fits to that distribution
 #
+
+all: rrstdmp clean
 
 rrstdmp: rrstdmp.o $(OBJECTS)
 	@echo $(BLT) $@ $(SEPR)
@@ -42,13 +44,13 @@ rrstdmp.o: rrstdmp.cpp
 #    analysis, such as with txt2png.sh
 #
 
-rrmapgen: rrmapgen.o $(OBJECTS)
-	@echo $(BLT) $@ $(SEPR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+#rrmapgen: rrmapgen.o $(OBJECTS)
+#	@echo $(BLT) $@ $(SEPR)
+#	$(CXX) $(CXXFLAGS) $^ -o $@
 
-rrmapgen.o: rrmapgen.cpp
-	@echo $(BLT) $@ $(SEPR)
-	$(CXX) -I include -c $< -o $@
+#rrmapgen.o: rrmapgen.cpp
+#	@echo $(BLT) $@ $(SEPR)
+#	$(CXX) -I include -c $< -o $@
 
 # -=-=-=-=-=-=-=-=-=-= rrmeangen -=-=-=-=-=-=-=-=-=-=-= #
 # rrmeangen is the main program for generating and analyzing
@@ -56,12 +58,12 @@ rrmapgen.o: rrmapgen.cpp
 #   and its relation to its sticking event
 #
 
-rrmeangen: rrmeangen.o $(OBJECTS)
-	@echo $(BLT) $@ $(SEPR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+#rrmeangen: rrmeangen.o $(OBJECTS)
+#	@echo $(BLT) $@ $(SEPR)
+#	$(CXX) $(CXXFLAGS) $^ -o $@
 
-rrmeangen.o: rrmeangen.cpp
-	$(CXX) -I include -c $< -o $@
+#rrmeangen.o: rrmeangen.cpp
+#	$(CXX) -I include -c $< -o $@
 
 # -=-=-=-=-=-=-=-=-=-= dependents -=-=-=-=-=-=-=-=-=-=-= #
 #
@@ -73,7 +75,7 @@ $(OBJECTS): %.o: %.cpp
 #  other files...
 #
 #  standard non-twist map module
-snm.o: snm.h
+#snm.o: snm.h
 
 # -=-=-=-=-=-=-=-=- Utilities, etc. =-=-=-=-=-=-=-=-= #
 # Installs rrstdmp into home bin
@@ -97,10 +99,11 @@ install:
 # Cleans object files
 .PHONY: clean
 clean:
-ifneq ("$(shell ls | grep '.*\.o')","")
-	@echo "--->  Cleaning object files \n\t\c"
-	rm $(shell ls | grep ".*\.o")
-else
-	@echo "--->  No object files to remove"
-endif
+	rm $(OBJECTS) rrstdmp.o
+#ifneq ("$(shell ls | grep '.*\.o')","")
+#	@echo "--->  Cleaning object files \n\t\c"
+#	rm $(shell ls | grep ".*\.o")
+#else
+#	@echo "--->  No object files to remove"
+#endif
 
