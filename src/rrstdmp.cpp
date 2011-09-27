@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	char inFilename[] = "input1";               // This line and the one below should probably be char var[30] or something like that
 	char outFilename[] = "rr_histogram.txt";    //  to avoid memory problems if the file name is longer than 'input1', etc.
 	double* x,* y;								// Will be dynamically declared matrices of length w
-	unsigned long int diff;						// Window size and overlap
+	unsigned int diff;                          // Window size and overlap
 	ofstream fid;								// Output file streams
 	
 	// Program control variables
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	int rrcntr = 0;							// Counter for redundant rp recurrences
 	mpz_t currWin, rrEnter, tau;			// RR time variables
 	mpz_t winNumMax, l;						// Trajectory length
-	double tauDoub;							// Length of individual sticy event as a double
+	double tauDoub;							// Length of individual sticky event as a double
 
 	// Initialize multiprecision variables
 	mpz_init(winNumMax);

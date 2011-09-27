@@ -26,7 +26,7 @@ SEPR = "\n\t\c"
 #   of sticky events, and, if chosen, the fits to that distribution
 #
 
-all: rrstdmp clean
+all: rrstdmp cleanobjs
 
 rrstdmp: rrstdmp.o $(OBJECTS)
 	@echo $(BLT) $@ $(SEPR)
@@ -84,8 +84,8 @@ install:
 	@echo "--->  Staging rrstdmp into ~/bin"
 	mv rrstdmp ~/bin/
 
-#.PHONY: zip
-#zip:
+#.PHONY: archive
+#archive:
 #	@echo "---> Zipping file to backup."
 #	cd ~/Desktop
 #	mkdir backup_rrstdmp
@@ -96,14 +96,18 @@ install:
 #	cp -r src/ ~/Desktop/backup-rrstdmp/src/
 #	cp -r include/ ~/Desktop/backup-rrstdmp/include/
 
+# Cleans objec files for build
+.PHONY: cleanobjs
+cleanobjs:
+	rm $(OBJECTS) rrstdmp.o
+
 # Cleans object files
 .PHONY: clean
 clean:
-	rm $(OBJECTS) rrstdmp.o
-#ifneq ("$(shell ls | grep '.*\.o')","")
-#	@echo "--->  Cleaning object files \n\t\c"
-#	rm $(shell ls | grep ".*\.o")
-#else
-#	@echo "--->  No object files to remove"
-#endif
+ifneq ("$(shell ls | grep '.*\.o')","")
+	@echo "--->  Cleaning object files \n\t\c"
+	rm $(shell ls | grep ".*\.o")
+else
+	@echo "--->  No object files to remove"
+endif
 
