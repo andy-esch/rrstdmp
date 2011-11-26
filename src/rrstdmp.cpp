@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	if ( (diff = globalWindow - globalOverlap)%2 != 0 ) // Assign diff, check for constraint
+	if ( (diff = globalWindow - globalOverlap) % 2 != 0 ) // Assign diff, check for constraint
 	{
 		cout << "\aError: w - n must be evenly divisible by 2." << endl;
 		exit(0);
@@ -107,10 +107,10 @@ int main(int argc, char **argv)
 	{
 		cerr << endl;
 		cerr << "ERROR: Could not open initial value input file " \
-		<< inFilename << "." << endl;
-		cerr << "       A sample input file called 'sample_input' was "
-		"created.\a" << endl;
-		cerr << endl;
+		     << inFilename << "." << endl;
+		cerr << "       A sample input file called 'sample_input' was " \
+             << "created.\a\n" << endl;
+
 		ofstream new_input("sample_input",ios::out);
 		new_input << 0.5 << '\t' << 0.601 << endl;
 		new_input.close();
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
 	/**********************************************************/
 	// Print summary of input values
-	if (!silent)
+	if (not silent)
 	{
 		cout << endl;
 		cout << argv[0] << " summary of inputs: \n" << endl;

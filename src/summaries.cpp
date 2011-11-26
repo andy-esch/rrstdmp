@@ -1,11 +1,5 @@
 
 #include "summaries.h"
-#include <iostream>
-#include <ctime>
-
-using std::cerr;
-using std::cout;
-using std::endl;
 
 void timesummary(time_t t1, time_t& t2)
 {

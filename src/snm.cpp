@@ -8,9 +8,6 @@
  */
 
 #include "snm.h"
-#include <cmath>
-
-const double TWOPI = 2*M_PI;
 
 void snm(double a, double b, double* x, double* y, const int w)
 {

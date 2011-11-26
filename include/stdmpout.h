@@ -1,6 +1,16 @@
 
-#ifndef _STDMPOUT_H_
-#define _STDMPOUT_H_
+#ifndef STDMPOUT_H
+#define STDMPOUT_H
+
+#include <fstream>
+#include <iostream>
+#include <cstdio>
+
+#include "stdmp.h"
+
+using std::ios;
+using std::endl;
+using std::ofstream;
 
 
 void stdmpout(const int, const double, const double, \

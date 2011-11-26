@@ -6,15 +6,7 @@
  *
  */
 
-#include "rr.h"
-#include "stdmp.h"
-#include <cmath>
-#include <iostream>
-#include <iomanip>
-
-using std::cout;
-using std::endl;
-using std::setw;
+#include "rrtester.h"
 
 void rrtester(int& rrcntr)
 {

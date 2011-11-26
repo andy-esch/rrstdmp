@@ -4,11 +4,6 @@
  */
 
 #include "usage.h"
-#include <iostream>
-#include <gmp.h>
-#include <gmpxx.h>
-
-using namespace std;
 
 void version(void)
 {
@@ -103,55 +98,3 @@ void usage_rrmapgen(const double e, const double k, long l, \
 	cerr << "    -h               Print this wonderfully informative text" << endl;
 	cerr << endl;
 }
-
-/*
-
-void changeLog(void)
-{	
-	cerr << "\n Change Log -- ";
-	version();
-	cout << "***************************************************************************" << endl;
-	cout << " December 15\n";
-	cout << "   Full histogram functionality and CDF construction.  Still not 100% confidently implemented";
-	cout << "     but pretty much there, even matching gamma values as seen in rrslope.m\n";
-	cout << "     Length is now output into results.log in scientific notation, and rrcdf(...)\n";
-	cout << "     contains all of the CDF information, where the hist and other variables are passed\n";
-	cout << "     in the function.\n";
-	cout << " December 13\n";
-	cout << "   Histogram functionality, though still in beta testing\n";
-	cout << " November 26\n";
-	cout << "  Set output precision in rrstdmp to 15 significant figures.  version() became\n";
-	cout << "    a function for use in this (changeLog()) and usage(...).  the make file\n";
-	cout << "    has been made better, including linkage to GNU Scientific Library,\n";
-	cout << "    clean, and stage functionality.\n";
-	cout << " November 20\n";
-	cout << "  The program is now correctly calibrated (detects n-periods with very good\n";
-	cout << "    accuracy).  Reminder: rrmean is output at 98% of calculated value of the \n";
-	cout << "    golden KAM curve.\n";
-	cout << " November 13/14\n";
-	cout << "  Added overlap copying in the rr and rrInit functions with rrcntr.  This \n";
-	cout << "    allows far fewer computations and an improved performance.  There is a bug\n";
-	cout << "    in rrmean or rr that is dependent on n and outputs the incorrect rrmean if\n";
-	cout << "    n is more than half of w.\n";
-	cout << " November 12\n";
-	cout << "  Added rrmean.cpp to the makefile.  This calculates the recurrence rate of\n";
-	cout << "    the golden KAM curve for the w and e parameters enetered if no rr threshold\n";
-	cout << "    is entered (the r flag).  The -p flag was also added -- it allows the\n";
-	cout << "    option of publishing run details to file.\n";
-	cout << " November 10\n";
-	cout << "  Added rrmean output to the same file that contains the sticky event length.\n";
-	cout << "    The output file size is around 13.6MB per billion trajectory points, but \n";
-	cout << "    but this is dependent upon the data analyzed.\n";
-	cout << " November 8\n";
-	cout << "  Added the sticky threshold kernel.  This now reduces the total compute time.\n";
-	cout << " November 4\n";
-	cout << "  Changed rr module so that the output is (2*RR+w)/w*w, to give the recurrence \n";
-	cout << "    rate  of the full map.  This allows n-periods to be exactly 1/n instead of \n";
-	cout << "    an  approximate.  The std module was updated to account for a minor error \n";
-	cout << "    in the overlapping of data: a standard error is given if the overlap is \n";
-	cout << "    smaller than one.\n";
-	cout << " October 28\n";
-	cout << "  Added runtime information (time_t and structs) for output and terminal display\n";
-	cout << " October 26\n";
-	cout << "	Change atoi to atof in k input (wrong type before)\n";
-} */

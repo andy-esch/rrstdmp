@@ -2,13 +2,21 @@
  *  rrtetser.h
  *  
  *
- *  Created by Peter Eschbacher on 4/29/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
  *
  */
-#ifndef _RRTESTER_H_
-#define _RRTESTER_H_
+#ifndef RRTESTER_H
+#define RRTESTER_H
+
+#include "rr.h"
+#include "stdmp.h"
+#include <cmath>
+#include <iostream>
+#include <iomanip>
+
+using std::cout;
+using std::endl;
+using std::setw;
 
 void rrtester(int&);
 
-#endif // _RRTESTER_H_
+#endif // RRTESTER_H

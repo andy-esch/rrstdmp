@@ -8,7 +8,6 @@
  */
 
 #include "misc.h"
-#include <cmath>
 
 void logspace(double *__restrict__ value, const int n, const double min, \
 			  const double max)

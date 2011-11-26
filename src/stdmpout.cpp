@@ -1,12 +1,5 @@
 
-#include <fstream>
-#include <iostream>
-#include <cstdio>
-#include "stdmp.h"
-
-using std::ios;
-using std::endl;
-using std::ofstream;
+#include "stdmpout.h"
 
 void stdmpout(const int len, const double xInit, const double yInit, \
 			  const double k, const double rrmn)
