@@ -31,7 +31,7 @@ void version(void)
 	cerr << "Commandline rr calculator, version " << version << endl;
 }
 
-void usage_rrstdmp(const double e, const double k, mpz_t l, \
+void usage_rrstdmp(const double e, const double k, long l, \
 				   const unsigned int n, const unsigned int w, \
 				   const double thr, const int b)
 {
@@ -68,7 +68,7 @@ void usage_rrstdmp(const double e, const double k, mpz_t l, \
 	cerr << endl;
 }
 
-void usage_rrmapgen(const double e, const double k, mpz_t l, \
+void usage_rrmapgen(const double e, const double k, long l, \
 					const unsigned int n, const unsigned int w, \
 					double thr, const int b)
 {

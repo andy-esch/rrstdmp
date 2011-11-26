@@ -13,6 +13,7 @@
 #include "stdmp.h"
 #include "summaries.h"
 #include "usage.h"
+#include "cmdLineInput.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -21,8 +22,6 @@
 #include <iostream>
 #include <vector>
 
-#include <gmpxx.h>
-#include <gmp.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_fit.h>
 
@@ -36,12 +35,13 @@ using std::vector;
 
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
 int globalWindow = 100, globalOverlap = 50;		// window, overlap; global/extern
+const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
 {
-	char inFilename[] = "input1";               // This line and the one below should probably be char var[30] or something like that
-	char outFilename[] = "rr_histogram.txt";    //  to avoid memory problems if the file name is longer than 'input1', etc.
-	double* x,* y;								// Will be dynamically declared matrices of length w
+	char inFilename[60] = "input1";
+	char outFilename[60] = "rr_histogram.txt";
+	double* x,* y;								// Will be dynamically declared matrices of length w -- should not be dynamically declared since heap is slower than stack?
 	unsigned int diff;                          // Window size and overlap
 	ofstream fid;								// Output file streams
 	
@@ -53,16 +53,9 @@ int main(int argc, char **argv)
 	// Recurrence rate variables
 	double thr = 0.0, rrLast, rrCurr;		// Sticking Threshold, recurrence rate placeholders
 	int rrcntr = 0;							// Counter for redundant rp recurrences
-	mpz_t currWin, rrEnter, tau;			// RR time variables
-	mpz_t winNumMax, l;						// Trajectory length
+    long int currWin = 1, rrEnter = 1, tau = 1;
+    long int winNumMax, l = 25000000;
 	double tauDoub;							// Length of individual sticky event as a double
-
-	// Initialize multiprecision variables
-	mpz_init(winNumMax);
-	mpz_init_set_ui(currWin,1);
-	mpz_init_set_ui(rrEnter,1);
-	mpz_init_set_ui(tau,1);
-	mpz_init_set_ui(l,25000000);
 
 	// Initialize runtime information
 	time_t t1 = time(NULL), t2, rawTime;
@@ -75,113 +68,8 @@ int main(int argc, char **argv)
 
 	/**********************************************************/
 	// Read commandline input
-	const char* optstring(":i:o:e:w:n:l:k:r:b:aspfth?");
-	if ( argc==1 )
-	{
-		cout << endl;
-		cout << "Error: no options passed." << endl;
-		usage_rrstdmp(ge,k,l,globalOverlap,globalWindow,thr,nBins); 
-		exit(0);
-	}
-
-	while (optind < argc)
-	{
-		optarg = NULL;
-		int c;
-		while ( (c = getopt(argc, argv, optstring)) != -1 )
-		{
-			switch(c)
-			{
-				case 'i': // initial values input
-					strcpy(inFilename,argv[optind-1]);
-					break;
-				case 'o': // output file name
-					strcpy(outFilename,argv[optind-1]);
-					break;
-				case 'e':
-					ge = atof(optarg);
-					break;
-				case 'w':
-					globalWindow = atoi(optarg);
-					if ( (globalOverlap >= globalWindow) && (globalOverlap != 1) )
-					{
-						cerr << "\aError: window is ";
-						cerr << ( globalOverlap > globalWindow ?"smaller than":"equal to" );
-						cerr << " overlap size." << endl;
-						exit(0);
-					}
-					break;
-				case 'n':
-					globalOverlap = atoi(optarg);
-					if (globalOverlap<1)
-					{
-						cerr << "\aError: overlap must be greater than or \
-						equal to 1." << endl;
-						exit(0);
-					}
-					else if ( (globalOverlap >= globalWindow) && (globalWindow != 10) )
-					{
-						cerr << "\aError: overlap is ";
-						cerr << (globalOverlap>globalWindow?"greater than":"equal to");
-						cerr << " window size." << endl;
-						exit(0);
-					} 
-					break;
-				case 'l': 
-					mpz_set_str(l,optarg,10);
-					break;
-				case 'k':
-					k = atof(optarg)/(2.0 * M_PI);
-					break;
-				case 'r':
-					thr = atof(optarg);
-					if ( thr > 1.0 || thr < 0.0 )
-					{
-						cerr << "\aError: threshold (r) must be between 0.0 \
-						and 1.0" << endl;
-						exit(0);
-					}
-					break;
-				case 'b':
-					nBins = atoi(optarg);
-					if (nBins < 1)
-					{
-						cerr << "\aError: number of bins must be larger \
-						than 0." << endl;
-						exit(0);
-					}
-					break;
-				case 'a':
-					/* This will take in a file that has the previous run's 
-					 * details, including the last data point, so that the
-					 * run being called will be a continuation of that. This
-					 * function needs to bypass this inputting scheme, though
-					 * so hmm..
-					 */
-					break;
-				case 's':
-					silent = true;
-					break;
-				case 'p':
-					publish = false;
-					break;
-				case 'f':
-					doFit = false;
-					break;
-				case 't': // Provisionary feature: to test the output of rr() to ensure it is correct
-					rrtest = true;
-					break;
-				case '?':
-				case 'h':
-					usage_rrstdmp(ge,k,l,globalOverlap,globalWindow,thr,nBins);
-					exit(0);
-				default:
-					cout << "Invalid entry: '" << static_cast<char> (c) << "'" << endl;
-					usage_rrstdmp(ge,k,l,globalOverlap,globalWindow,thr,nBins);
-					exit(0);
-			}
-		}
-    }
+    cmdLineInput(argc, argv, inFilename, outFilename, l, thr, nBins, silent, \
+                 publish, doFit, rrtest);
 
 	/**********************************************************/	
 	//Initialize variables based on commandline
@@ -200,7 +88,7 @@ int main(int argc, char **argv)
 	}
 	x = new double[globalWindow];
 	y = new double[globalWindow];
-	mpz_fdiv_q_ui(winNumMax,l,diff);			// Calculate number of windows
+    winNumMax = l / diff;                       // calc num of windows
 	if(thr==0.0) thr = rrmean(rrcntr);			// Calculate RR threshold
 
 	// Initialize histogram
@@ -256,16 +144,16 @@ int main(int argc, char **argv)
 	rrCurr = rrInit(x,y,rrcntr);
 
 	// If begin in sticky event, exit it
-	while ( rrCurr > thr && mpz_cmp(winNumMax, currWin) )
+	while ( rrCurr > thr && winNumMax != currWin )
 	{
 		stdmp(x,y);
 		rrCurr = rr(x,y,rrcntr);
-		mpz_add_ui(currWin,currWin,1);
+        currWin++;
 	}
 
 	cout << "Exited existing sticky event of length " << currWin << "." << endl;
 
-	if ( !mpz_cmp(winNumMax,currWin) )
+    if ( winNumMax == currWin )
 	{
 		cerr << "\n\aError:\tThreshold (r) larger than largest recurrence" 
 		"rate value.  No data output.\n";
@@ -275,7 +163,7 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	while ( mpz_cmp(winNumMax, currWin) )	// while currWin < winNumMax
+    while ( currWin  < winNumMax )
 	{
 		stdmp(x,y);
 		rrLast = rrCurr;
@@ -283,20 +171,20 @@ int main(int argc, char **argv)
 
 		if (rrCurr > thr && rrLast < thr)
 		{
-			mpz_set(rrEnter,currWin);
+            rrEnter = currWin;
 			isSticky = true;
 		}
 		else if (rrCurr < thr && rrLast > thr)
 		{
-			mpz_sub(tau,currWin,rrEnter);
-			tauDoub = static_cast<double> (diff*mpz_get_ui(tau) + globalOverlap);
+            tau = currWin - rrEnter;
+            tauDoub = static_cast<double> (diff * tau + globalOverlap);
 			gsl_histogram_increment(h,tauDoub);
 			isSticky = false;
 		}
-		mpz_add_ui(currWin,currWin,1);
+        currWin++;
 	}
 
-	mpz_sub(tau,winNumMax,rrEnter);
+    tau = winNumMax - rrEnter;
 
 	cout << "Uncompleted event of length " << tau << "." << endl;
 	cout.precision(15);
@@ -415,7 +303,7 @@ int main(int argc, char **argv)
 		ofstream resultsLog("rrstdmp_results.log",ios::app);
 		if (resultsLog.is_open())
 		{
-			resultsLog << k*2.0*M_PI << "," << ge << "," << mpz_get_d(l) << "," \
+			resultsLog << k*2.0*M_PI << "," << ge << "," << l << "," \
 			<< globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
 			<< "," << asctime(timeinfo);
 /*			if (doFit)
@@ -426,14 +314,14 @@ int main(int argc, char **argv)
 		} else
 		{
 			cerr << "Error: Could not open rrstdmp_results.log" << endl;
-			cerr << k*2.0*M_PI << "," << ge << "," << mpz_get_d(l) << "," \
+			cerr << k*2.0*M_PI << "," << ge << "," << l << "," \
 			<< globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
 			<< "," << asctime(timeinfo);
 		}
 	}
 
 	gsl_histogram_free(h);
-	mpz_clear(l);
+//	mpz_clear(l);
 	
 	return 0;
 }

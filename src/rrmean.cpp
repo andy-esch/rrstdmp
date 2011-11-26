@@ -8,22 +8,6 @@
  */
 
 #include "rrmean.h"
-#include "rr.h"
-#include "stdmp.h"
-#include <cmath>
-#include <iostream>
-#include <iomanip>
-
-using std::cout;
-using std::endl;
-using std::ios;
-using std::setw;
-
-double TWOPI = 2*M_PI;
-
-double f(const double, const double, const int, const int);
-double secantApprox(double, double, const double, const int, \
-					int, int, const double);
 
 double rrmean(int &__restrict__ rrcntr)
 {

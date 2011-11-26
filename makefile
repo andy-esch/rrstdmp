@@ -3,11 +3,11 @@
 vpath %.cpp src
 vpath %.h include
 
-CXX = g++-mp-4.4
-CXXFLAGS = -L/opt/local/lib -lgmpxx -lgmp -lgsl -I/opt/local/include -I include
+CXX = g++
+CXXFLAGS = --std=gnu++0x -L/opt/local/lib -lgsl -I/opt/local/include -I include
 
-OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o
-HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h
+OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o cmdLineInput.o
+HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h cmdLineInput.h
 BLT = "--->  Making"
 SEPR = "\n\t\c"
 
