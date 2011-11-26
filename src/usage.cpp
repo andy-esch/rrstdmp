@@ -45,7 +45,10 @@ void usage_rrstdmp(const double e, const double k, long l, \
 	cerr << endl;
 	cerr << "  (c) Peter A. Eschbacher, otto.hasselblad@gmail.com\n";
 	cerr << "  Some code borrowed and modified from Norbert Marwan's \n";
-	cerr << "  recurrence rate calculator (private correspondence)\n\n";
+	cerr << "  recurrence rate calculator (private correspondence)\n";
+    cerr << endl;
+    cerr << "  View project at http://github.com/ohasselblad/rrstdmp\n\n";
+    cerr << endl;
 	cerr << "usage:\n  rrstdmp [options]\n" << endl;
 	cerr << "options:" << endl;
 	cerr << "    -i <string>   initial values file (input filename)" << endl;

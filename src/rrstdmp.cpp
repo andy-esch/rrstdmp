@@ -55,7 +55,6 @@ int main(int argc, char **argv)
 	int rrcntr = 0;							// Counter for redundant rp recurrences
     long int currWin = 1, rrEnter = 1, tau = 1;
     long int winNumMax, l = 25000000;
-	double tauDoub;							// Length of individual sticky event as a double
 
 	// Initialize runtime information
 	time_t t1 = time(NULL), t2, rawTime;
@@ -86,6 +85,11 @@ int main(int argc, char **argv)
 		cout << "\aError: w - n must be evenly divisible by 2." << endl;
 		exit(0);
 	}
+    else if ( globalOverlap > (globalWindow / 2) )
+    {
+        cerr << "\aError: n must be equal to or smaller than w / 2" << endl;
+        exit(0);
+    }
 	x = new double[globalWindow];
 	y = new double[globalWindow];
     winNumMax = l / diff;                       // calc num of windows
@@ -143,7 +147,7 @@ int main(int argc, char **argv)
 	stdmpInit(x,y);
 	rrCurr = rrInit(x,y,rrcntr);
 
-	// If begin in sticky event, exit it
+	// If begin in sticky event, exit event
 	while ( rrCurr > thr && winNumMax != currWin )
 	{
 		stdmp(x,y);
@@ -155,30 +159,30 @@ int main(int argc, char **argv)
 
     if ( winNumMax == currWin )
 	{
-		cerr << "\n\aError:\tThreshold (r) larger than largest recurrence" 
-		"rate value.  No data output.\n";
-		cerr << "\tConsider a smaller rr threshold (r) or larger data set (l)." \
-		<< endl;
+		cerr << "\n\aError:\tThreshold (r) larger than largest recurrence " \
+             << "rate value.  No data output.\n" \
+		     << "\tConsider a smaller rr threshold (r) or larger data set (l)." \
+		     << endl;
+
 		publish = false;
 		exit(0);
 	}
 
-    while ( currWin  < winNumMax )
+    while ( currWin < winNumMax )
 	{
 		stdmp(x,y);
 		rrLast = rrCurr;
 		rrCurr = rr(x,y,rrcntr);
 
-		if (rrCurr > thr && rrLast < thr)
+		if (rrCurr > thr && rrLast <= thr)
 		{
             rrEnter = currWin;
 			isSticky = true;
 		}
-		else if (rrCurr < thr && rrLast > thr)
+		else if (rrCurr <= thr && rrLast > thr)
 		{
             tau = currWin - rrEnter;
-            tauDoub = static_cast<double> (diff * tau + globalOverlap);
-			gsl_histogram_increment(h,tauDoub);
+			gsl_histogram_increment(h,static_cast<double> (diff * tau + globalOverlap));
 			isSticky = false;
 		}
         currWin++;
@@ -216,69 +220,72 @@ int main(int argc, char **argv)
 	delete [] y;
 	x = NULL;
 	y = NULL;
-	/**********************************************************/
-	// Construct CDF
-	cout << "Constructing CDF." << endl;
-	double histSum = gsl_histogram_sum(h);
-	vector<int> binTimes;
-
-	// Find non-zero bins and store their indices in the vector binTimes[]
-	for ( int i = 0; i < nBins; i++ )
-		if ( gsl_histogram_get(h,i) )	// If non-zero entry, put in binTimes
-			binTimes.push_back(i);
-
-	// Create vectors to store the x and y histogram values that are
-	//   modified and copied from the histogram information
-	x = new double[binTimes.size()];
-	y = new double[binTimes.size()];
-
-	for ( int j = binTimes.size()-1; j >= 0; j-- )
-	{
-		y[j] = gsl_histogram_get(h,binTimes[j]);
-		x[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
-	}	
-
-	// Accumulate y component for CDF	--- Look into the accumulate function that's in either numerics or algorithm...
-	cumSumNorm(y,binTimes.size(),histSum);
-
-	// Print to file
-	fid.open(outFilename,ios::out);
-	if (fid.is_open())
-	{
-		for (int i = 0; i<binTimes.size(); i++)
-			fid << log10(x[i]) << '\t' << log10(y[i]) << endl;
-		fid.close();
-	} else
-	{
-		cerr << "Error: Could not open " << outFilename << endl;
-		cout << "\tPrinting to screen..." << endl;
-		for (int i = 0; i<binTimes.size(); i++)
-			cout << log10(x[i]) << '\t' << log10(y[i]) << endl;
-	}
 
 	/**********************************************************/
-	// Perform least square linear fit if chosen
-	if (doFit)
-	{
-		for (int i = 0; i < binTimes.size(); i++)
-		{
-			x[i] = log10(x[i]);
-			y[i] = log10(y[i]);
-		}
+	/*       Construct CDF                                    */
+    {
+        cout << "Constructing CDF." << endl;
+        double histSum = gsl_histogram_sum(h);
+        vector<int> binTimes;
 
-		double b, m, varb, covbm, varm, sumsq;
-		gsl_fit_linear(x,1,y,1, binTimes.size(), &b, &m, \
-					   &varb, &covbm, &varm, &sumsq);
-		double m2 = -1.0 * mlefit(x,binTimes.size());
-		cout.precision(5);
-		cout.setf(ios::fixed,ios::floatfield);
-		cout << "+----------------------------+" << endl;
-		cout << "| Ordinary log-log fit:" << endl;
-		cout << "| \t(" << m << " +/- " << sqrt(varm) << ")x + (" << b << " +/- " << sqrt(varb) << " ) |" << endl;
-		cout << "| MLE fit:" << endl;
-		cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "  |" << endl; 
-		cout << "+----------------------------+" << endl;
-	}
+        // Find non-zero bins and store their indices in the vector binTimes[]
+        for ( int i = 0; i < nBins; i++ )
+            if ( gsl_histogram_get(h,i) )	// If non-zero entry, put in binTimes
+                binTimes.push_back(i);
+
+        // Create vectors to store the x and y histogram values that are
+        //   modified and copied from the histogram information
+        x = new double[binTimes.size()];
+        y = new double[binTimes.size()];
+
+        for ( int j = binTimes.size()-1; j >= 0; j-- )
+        {
+            y[j] = gsl_histogram_get(h,binTimes[j]);
+            x[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
+        }	
+
+        // Accumulate y component for CDF
+        // --- Look into the accumulate function that's in either numerics or algorithm...
+        cumSumNorm(y,binTimes.size(),histSum);
+
+        // Print to file
+        fid.open(outFilename,ios::out);
+        if (fid.is_open())
+        {
+            for (int i = 0; i<binTimes.size(); i++)
+                fid << log10(x[i]) << '\t' << log10(y[i]) << endl;
+            fid.close();
+        } else
+        {
+            cerr << "Error: Could not open " << outFilename << endl;
+            cout << "\tPrinting to screen..." << endl;
+            for (int i = 0; i<binTimes.size(); i++)
+                cout << log10(x[i]) << '\t' << log10(y[i]) << endl;
+        }
+	/**********************************************************/
+	/*    Perform least square linear fit if chosen           */
+        if (doFit)
+        {
+            for (int i = 0; i < binTimes.size(); i++)
+            {
+                x[i] = log10(x[i]);
+                y[i] = log10(y[i]);
+            }
+
+            double b, m, varb, covbm, varm, sumsq;
+            gsl_fit_linear(x,1,y,1, binTimes.size(), &b, &m, \
+                           &varb, &covbm, &varm, &sumsq);
+            double m2 = -1.0 * mlefit(x,binTimes.size());
+            cout.precision(5);
+            cout.setf(ios::fixed,ios::floatfield);
+            cout << "+----------------------------+" << endl;
+            cout << "| Ordinary log-log fit:" << endl;
+            cout << "| \t(" << m << " +/- " << sqrt(varm) << ")x + (" << b << " +/- " << sqrt(varb) << " ) |" << endl;
+            cout << "| MLE fit:" << endl;
+            cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "  |" << endl; 
+            cout << "+----------------------------+" << endl;
+        }
+    }
 
 	/**********************************************************/
 	// End of program
@@ -321,7 +328,6 @@ int main(int argc, char **argv)
 	}
 
 	gsl_histogram_free(h);
-//	mpz_clear(l);
-	
+
 	return 0;
 }
