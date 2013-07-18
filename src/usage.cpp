@@ -9,12 +9,12 @@ void version(void)
 {
 	string version("$Revision: 2.8.0 $($Date: 2011/05/30 14:04:00 $)");
 
-	int pos = 0;	// remove "$"
+	unsigned short pos = 0;	// remove "$"
 
 	while ( pos >= 0  && pos < version.length())
 	{
 		pos = version.find("$");
-		if ( pos >=0 && pos < version.length())
+		if ( pos >= 0 && pos < version.length())
 			version.erase(pos, 1);
 	}
 	version.erase(0, 10); // remove "Revision:"

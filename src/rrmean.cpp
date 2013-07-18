@@ -43,10 +43,8 @@ double f(const double k, const double yInit, const int n, const int m)
 double secantApprox(double xi, double xi_1, const double e, const int iters, \
 					int n, int m, const double k)
 {
-	double d = 0;
-	double xlast= xi;
-	int pass = 1;
-	double fCurr, fLast;
+	double d = 0, xlast = xi, fCurr, fLast;
+
 	for (int j = 1; j <= iters; j++)
 	{
 		fCurr = f(k,xi,n,m);
