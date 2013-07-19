@@ -16,8 +16,8 @@ extern const double TWOPI;
 
 void stdmpInit(double*, double*);
 
-inline void stdmp(double *__restrict__ x, double *__restrict__ y)
-{
+void stdmp(double *__restrict__ x, double *__restrict__ y);
+/*{
  	extern int globalWindow, globalOverlap;
 	extern double k;
 	int i;
@@ -38,9 +38,9 @@ inline void stdmp(double *__restrict__ x, double *__restrict__ y)
 		x[i] = fmod(y[i] + x[i-1] + modCorr, 1.0);
 		y[i+1] = fmod(y[i] + k*sin( TWOPI * x[i] ) + modCorr, 1.0);
 		x[i+1] = fmod(y[i+1] + x[i] + modCorr, 1.0);
-	}   
-}
+	}
+} */
 
 double stdmpLifted(double, double, const int);
 
-#endif // _STDMP_H
+#endif // STDMP_H
