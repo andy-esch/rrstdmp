@@ -284,6 +284,7 @@ int main(int argc, char **argv)
                            &varb, &covbm, &varm, &sumsq);
             double m2 = -1.0 * mlefit(x,binTimes.size());
             cout.precision(5);
+//            std::string outputOne = "| \t(" + m + " +/- " + sqrt(varm) + ")x + (" + b + " +/- " + sqrt(varb) + " ) |\n";
             cout.setf(ios::fixed,ios::floatfield);
             cout << "+----------------------------+" << endl;
             cout << "| Ordinary log-log fit:" << endl;
