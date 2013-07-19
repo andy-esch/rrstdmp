@@ -3,8 +3,10 @@
 vpath %.cpp src
 vpath %.h include
 
-CXX = g++
-CXXFLAGS = --std=gnu++0x -L/opt/local/lib -lgsl -I/opt/local/include -I include
+CXX = g++-mp-4.5
+CXXFLAGS = -L/opt/local/lib -lgsl -I/opt/local/include -I include
+OPTFLAGS = -funroll-loops -O3
+MSGS = -Wall -Weffc++
 
 OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o cmdLineInput.o
 HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h cmdLineInput.h
@@ -26,15 +28,15 @@ SEPR = "\n\t\c"
 #   of sticky events, and, if chosen, the fits to that distribution
 #
 
-all: rrstdmp cleanobjs
+all: rrstdmp #cleanobjs
 
 rrstdmp: rrstdmp.o $(OBJECTS)
 	@echo $(BLT) $@ $(SEPR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(MSGS) $^ -o $@
 
 rrstdmp.o: rrstdmp.cpp
 	@echo $(BLT) $@ $(SEPR)
-	$(CXX) -I include -c $< -o $@
+	$(CXX) $(MSGS) $(OPTFLAGS) -I include -c $< -o $@
 #	@echo $(BLT) "rrstdmp.o: \n\t\c"
 #	$(CXX) $(CXXFLAGS) -c rrstdmp.cpp
 
@@ -68,7 +70,7 @@ rrstdmp.o: rrstdmp.cpp
 # -=-=-=-=-=-=-=-=-=-= dependents -=-=-=-=-=-=-=-=-=-=-= #
 #
 $(OBJECTS): %.o: %.cpp
-	@echo $(BLT) $@ $(SEPR)
+#	@echo $(BLT) $@ $(SEPR)
 	$(CXX) -I include -c $< -o $@
 
 # -=-=-=-=-=-=-=-=-= other files -=-=-=-=-=-=-=-=-=-= #
@@ -104,10 +106,11 @@ cleanobjs:
 # Cleans object files
 .PHONY: clean
 clean:
-ifneq ("$(shell ls | grep '.*\.o')","")
-	@echo "--->  Cleaning object files \n\t\c"
-	rm $(shell ls | grep ".*\.o")
-else
-	@echo "--->  No object files to remove"
-endif
+	rm -f $(OBJECTS) rrstdmp.o
+#ifneq ("$(shell ls | grep '.*\.o')","")
+#	@echo "--->  Cleaning object files \n\t\c"
+#	rm $(shell ls | grep ".*\.o")
+#else
+#	@echo "--->  No object files to remove"
+#endif
 
