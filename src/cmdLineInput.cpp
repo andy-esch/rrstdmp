@@ -16,6 +16,7 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
 {
     const char* optstring(":i:o:e:w:n:l:k:r:b:aspfth?");
     extern int optopt;
+    double temp2 = 0.0;
 
     if ( argc == 1 )
     {
@@ -69,7 +70,8 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
                         } 
                         break;
                     case 'l':
-                        l = atoi(optarg);
+                        temp2 = atof(optarg);
+                        l = static_cast<long>(temp2);
                         break;
                     case 'k':
                         k = atof(optarg)/TWOPI;
