@@ -22,6 +22,10 @@
 #include <iostream>
 #include <vector>
 
+/* TODO: Look at including this into your code
+ #include <valarray>
+ */
+
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_fit.h>
 
@@ -32,6 +36,8 @@ using std::ios;
 using std::ofstream;
 using std::ifstream;
 using std::vector;
+
+typedef unsigned short usInt;
 
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
 int globalWindow = 100, globalOverlap = 50;		// window, overlap; global/extern
@@ -90,6 +96,7 @@ int main(int argc, char **argv)
         cerr << "\aError: n must be equal to or smaller than w / 2" << endl;
         exit(0);
     }
+    // allocate arrays based on input
 	x = new double[globalWindow];
 	y = new double[globalWindow];
     winNumMax = l / diff;                       // calc num of windows
@@ -200,7 +207,7 @@ int main(int argc, char **argv)
 		char buff[50];
 		// get the thread number from inFilename, increment it by one
 		// then put it in %d below
-		int globalOverlap = sprintf(buff,"%s_%d",inFilename,1);
+		int temp = sprintf(buff,"%s_%d",inFilename,1);
 		ofstream strand(buff,ios::out);
 		strand << x[globalWindow-1] << '\t' << y[globalWindow-1] << endl;
 		strand.close();
@@ -229,9 +236,9 @@ int main(int argc, char **argv)
         vector<int> binTimes;
 
         // Find non-zero bins and store their indices in the vector binTimes[]
-        for ( int i = 0; i < nBins; i++ )
-            if ( gsl_histogram_get(h,i) )	// If non-zero entry, put in binTimes
-                binTimes.push_back(i);
+        for ( int ii = 0; ii < nBins; ii++ )
+            if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
+                binTimes.push_back(ii);
 
         // Create vectors to store the x and y histogram values that are
         //   modified and copied from the histogram information
@@ -252,21 +259,21 @@ int main(int argc, char **argv)
         fid.open(outFilename,ios::out);
         if (fid.is_open())
         {
-            for (int i = 0; i<binTimes.size(); i++)
+            for (usInt i = 0; i<binTimes.size(); i++)
                 fid << log10(x[i]) << '\t' << log10(y[i]) << endl;
             fid.close();
         } else
         {
             cerr << "Error: Could not open " << outFilename << endl;
             cout << "\tPrinting to screen..." << endl;
-            for (int i = 0; i<binTimes.size(); i++)
+            for (usInt i = 0; i<binTimes.size(); i++)
                 cout << log10(x[i]) << '\t' << log10(y[i]) << endl;
         }
 	/**********************************************************/
 	/*    Perform least square linear fit if chosen           */
         if (doFit)
         {
-            for (int i = 0; i < binTimes.size(); i++)
+            for (usInt i = 0; i < binTimes.size(); i++)
             {
                 x[i] = log10(x[i]);
                 y[i] = log10(y[i]);
