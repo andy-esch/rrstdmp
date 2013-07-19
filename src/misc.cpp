@@ -12,7 +12,7 @@
 void logspace(double *__restrict__ value, const int n, const double min, \
 			  const double max)
 {
-	double delta = max - min;
+	double delta = (max>min)?(max - min):(min - max);
 	double denom = static_cast<double> (n-1);
 
 	for (int i = 0; i < n; i++)
