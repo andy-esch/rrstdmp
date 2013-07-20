@@ -51,7 +51,7 @@ void cumSumNorm(double *__restrict__ xx, const int n, const double norm )
 //	return gamm;
 //}
 
-double mlefit(double *__restrict__ x, int len)
+double mlefit(double *__restrict__ x, const int len)
 {
 	int imin = len/6;
 	double gam = 0.0, n = static_cast<double> (len - imin);
@@ -62,4 +62,29 @@ double mlefit(double *__restrict__ x, int len)
 	gam = gam / n - log10( pow(10.0,x[imin]) - 0.5 );
 
 	return 1.0 + 1.0/gam;
+}
+
+// Takes a histogram and returns two arrays (x,y) 
+void rrcdf(gsl_histogram* h, double * x, double * y)
+{
+    double * upper, * lower;
+    int nBins = gsl_histogram_bins(h);
+    double histSum = gsl_histogram_sum(h);
+    vector<int> binTimes;
+    
+    cout << "Constructing CDF." << endl;
+    
+    for (int ii = 0; ii < n; ii++)
+        if ( gsl_histogram_get(h,ii) )
+            binTimes.push_back(ii);
+    
+    x = new double[binTimes.size()];
+    y = new double[binTimes.size()];
+    
+    for ( int jj = binTimes.size() - 1; jj >= 0; jj-- )
+    {
+        y[jj] = gsl_histogram_get(h,binTimes[jj]);
+        gsl_histogram_get_range(h,binTimes.size(),upper,lower);
+        x[jj] = ( *upper + *lower ) / 2.0;
+    }
 }
