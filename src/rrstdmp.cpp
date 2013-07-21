@@ -55,6 +55,7 @@ int main(int argc, char **argv)
 	bool silent = false, isSticky = false;
 	bool doFit = true, publish = true;
 	bool rrtest = false;
+    bool verbose = true;
 
 	// Recurrence rate variables
 	double thr = 0.0, rrLast, rrCurr;		// Sticking Threshold, recurrence rate placeholders
@@ -234,11 +235,17 @@ int main(int argc, char **argv)
         cout << "Constructing CDF." << endl;
         double histSum = gsl_histogram_sum(h);
         vector<int> binTimes;
-
+        
+        if (verbose)
+            printHistogram(h);
+        
         // Find non-zero bins and store their indices in the vector binTimes[]
         for ( int ii = 0; ii < nBins; ii++ )
             if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
                 binTimes.push_back(ii);
+        
+        if (verbose)
+            cout << "binTimes.size() = " << binTimes.size() << endl;
 
         // Create vectors to store the x and y histogram values that are
         //   modified and copied from the histogram information
@@ -249,7 +256,10 @@ int main(int argc, char **argv)
         {
             y[j] = gsl_histogram_get(h,binTimes[j]);
             x[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
-        }	
+        }
+        
+        if (verbose)
+            printXY(x,y,binTimes.size());
 
         // Accumulate y component for CDF
         // --- Look into the accumulate function that's in either numerics or algorithm...
@@ -278,6 +288,8 @@ int main(int argc, char **argv)
                 x[i] = log10(x[i]);
                 y[i] = log10(y[i]);
             }
+            if (verbose)
+                printXY(x,y,binTimes.size());
 
             double b, m, varb, covbm, varm, sumsq;
             gsl_fit_linear(x,1,y,1, binTimes.size(), &b, &m, \
@@ -330,7 +342,7 @@ int main(int argc, char **argv)
 		{
 			cerr << "Error: Could not open rrstdmp_results.log" << endl;
 			cerr << k*2.0*M_PI << "," << ge << "," << l << "," \
-			<< globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
+            << globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
 			<< "," << asctime(timeinfo);
 		}
 	}
