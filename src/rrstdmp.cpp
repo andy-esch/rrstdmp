@@ -257,7 +257,7 @@ int main(int argc, char **argv)
             y[j] = gsl_histogram_get(h,binTimes[j]);
             x[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
         }
-        
+
         if (verbose)
             printXY(x,y,binTimes.size());
 
@@ -266,11 +266,13 @@ int main(int argc, char **argv)
         cumSumNorm(y,binTimes.size(),histSum);
 
         // Print to file
-        fid.open(outFilename,ios::out);
+        fid.open(outFilename,ios::app);
         if (fid.is_open())
         {
+            fid << asctime(timeinfo);
             for (usInt i = 0; i<binTimes.size(); i++)
                 fid << log10(x[i]) << '\t' << log10(y[i]) << endl;
+            fid << "\n\n";
             fid.close();
         } else
         {
