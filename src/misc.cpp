@@ -64,7 +64,7 @@ double mlefit(double *__restrict__ x, const int len)
 	return 1.0 + 1.0/gam;
 }
 
-// Takes a histogram and returns two arrays (x,y) 
+// Takes a histogram and returns two arrays (x,y) via pointers
 void rrcdf(gsl_histogram* h, double * x, double * y)
 {
     double * upper, * lower;
@@ -74,7 +74,7 @@ void rrcdf(gsl_histogram* h, double * x, double * y)
     
     cout << "Constructing CDF." << endl;
     
-    for (int ii = 0; ii < n; ii++)
+    for (int ii = 0; ii < nBins; ii++)
         if ( gsl_histogram_get(h,ii) )
             binTimes.push_back(ii);
     
@@ -87,4 +87,22 @@ void rrcdf(gsl_histogram* h, double * x, double * y)
         gsl_histogram_get_range(h,binTimes.size(),upper,lower);
         x[jj] = ( *upper + *lower ) / 2.0;
     }
+}
+
+void printHistogram(gsl_histogram* h)
+{
+    gsl_histogram_fprintf(stdout, h, "%g", "%g");
+}
+
+void printXY(double * x, double * y, int n)
+{
+    cout << endl;
+    cout << "---------------------------" << endl;
+    cout << "x\ty" << endl;
+    for (int ii = 0; ii < n; ii++)
+    {
+        cout << x[ii] << '\t' << y[ii] << endl;
+    }
+    cout << "---------------------------" << endl;
+    cout << endl;
 }
