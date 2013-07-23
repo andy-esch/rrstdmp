@@ -4,6 +4,10 @@
 rrstdmp
 test_misc
 
+# User-dependent logs #
+#######################
+rrstdmp_results.log
+
 # OS generated files #
 ######################
 .DS_S*
