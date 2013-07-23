@@ -16,13 +16,13 @@ void logspace(double *__restrict__ value, const int n, const double min, \
 	double denom = static_cast<double> (n-1);
 
 	for (int i = 0; i < n; i++)
-		value[i] = exp( ( min + static_cast<double>(i)*delta/denom ) * M_LN10 );
+		value[i] = pow(10,min + static_cast<double>(i)*delta/denom);
 }
 
 void linspace(double *__restrict__ value, const int n, const double min, \
 			  const double max)
 {
-	double delta = max - min;
+	double delta = (max>min)?(max-min):(min-max);
 	double denom = static_cast<double> (n - 1);
 
 	for (int i = 0; i < n; i++)
