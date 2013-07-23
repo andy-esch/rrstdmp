@@ -40,7 +40,9 @@ using std::vector;
 typedef unsigned short usInt;
 
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
-int globalWindow = 100, globalOverlap = 50;		// window, overlap; global/extern
+                                                    //** double check this in unit test
+int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern
+                                                    // ** double check this in unit test
 const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
@@ -50,7 +52,7 @@ int main(int argc, char **argv)
 	double* x,* y;								// Will be dynamically declared matrices of length w -- should not be dynamically declared since heap is slower than stack?
 	unsigned int diff;                          // Window size and overlap
 	ofstream fid;								// Output file streams
-	
+
 	// Program control variables
 	bool silent = false, isSticky = false;
 	bool doFit = true, publish = true;
@@ -235,15 +237,15 @@ int main(int argc, char **argv)
         cout << "Constructing CDF." << endl;
         double histSum = gsl_histogram_sum(h);
         vector<int> binTimes;
-        
+
         if (verbose)
             printHistogram(h);
-        
+
         // Find non-zero bins and store their indices in the vector binTimes[]
         for ( int ii = 0; ii < nBins; ii++ )
             if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
                 binTimes.push_back(ii);
-        
+
         if (verbose)
             cout << "binTimes.size() = " << binTimes.size() << endl;
 
@@ -298,6 +300,9 @@ int main(int argc, char **argv)
                            &varb, &covbm, &varm, &sumsq);
             double m2 = -1.0 * mlefit(x,binTimes.size());
             cout.precision(5);
+/* Structure the output in terms of strings so that the borders can be more responsive?
+ * ... Meaning a function like brdrprintr(char* brderchar, int length);
+ */
 //            std::string outputOne = "| \t(" + m + " +/- " + sqrt(varm) + ")x + (" + b + " +/- " + sqrt(varb) + " ) |\n";
             cout.setf(ios::fixed,ios::floatfield);
             cout << "+----------------------------+" << endl;
@@ -335,9 +340,9 @@ int main(int argc, char **argv)
 			resultsLog << k*2.0*M_PI << "," << ge << "," << l << "," \
 			<< globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
 			<< "," << asctime(timeinfo);
-/*			if (doFit)
-				resultsLog << m << "," << m2 << ",";
- */
+//			if (doFit)
+//				resultsLog << m << "," << m2 << ",";
+
 			resultsLog.close();
 			if (!silent) cout << "Input summary written to rrstdmp_results.log" << endl;
 		} else
