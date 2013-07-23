@@ -1,6 +1,6 @@
 # makefile for rrstdmp -- a program to calculate the recurrence rate of the 
 #  standard map written by andy eschbacher, Feb. 2011
-vpath %.cpp src
+vpath %.cpp src:test
 vpath %.h include
 
 CXX = g++-mp-4.5
@@ -10,6 +10,8 @@ MSGS = -Wall -Weffc++
 
 OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o cmdLineInput.o
 HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h cmdLineInput.h
+TESTOBJS = test_misc_cpp.o
+
 BLT = "--->  Making"
 SEPR = "\n\t\c"
 
@@ -39,6 +41,18 @@ rrstdmp.o: rrstdmp.cpp
 	$(CXX) $(MSGS) $(OPTFLAGS) -I include -c $< -o $@
 #	@echo $(BLT) "rrstdmp.o: \n\t\c"
 #	$(CXX) $(CXXFLAGS) -c rrstdmp.cpp
+
+# -=-=-=-=-=-=-=-=-=-= test =-=-=-=-=-=-=-=-=-=-= #
+# Create executable to test function outputs
+
+test_misc: test_misc.o misc.o
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(MSGS) -lboost_unit_test_framework-mt $^ -o $@
+
+test_misc.o: test_misc_cpp.cpp
+	$(CXX) $(MSGS) $(OPTFLAGS) -I include -lboost_unit_test_framework-mt -c $< -o $@
+
+misc.o: misc.cpp
+	$(CXX) -I include -c $< -o $@
 
 # -=-=-=-=-=-=-=-=-=-= rrmapgen =-=-=-=-=-=-=-=-=-=-= #
 #  rrmapgen shares much of the source code with rrstdmp but 
