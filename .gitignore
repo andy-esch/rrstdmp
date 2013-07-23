@@ -4,9 +4,10 @@
 rrstdmp
 test_misc
 
-# User-dependent logs #
-#######################
+# User-dependent logs, data #
+#############################
 rrstdmp_results.log
+rr_histogram.txt
 
 # OS generated files #
 ######################
