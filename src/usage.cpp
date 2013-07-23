@@ -7,7 +7,7 @@
 
 void version(void)
 {
-	string version("$Revision: 2.8.0 $($Date: 2011/05/30 14:04:00 $)");
+	string version("$Revision: 2.8.1 $($Date: 2013/07/23 10:58:00 $)");
 
 	unsigned short pos = 0;	// remove "$"
 
