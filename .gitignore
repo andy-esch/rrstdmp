@@ -2,6 +2,7 @@
 ####################
 *.o
 rrstdmp
+test_misc
 
 # OS generated files #
 ######################
