@@ -53,13 +53,13 @@ void cumSumNorm(double *__restrict__ xx, const int n, const double norm )
 
 double mlefit(double *__restrict__ x, const int len)
 {
-	int imin = len/6;
+	int imin = len/6; // arbitrarily choose start of analysis
 	double gam = 0.0, n = static_cast<double> (len - imin);
 
 	for (int i = imin; i < len; i++)
 		gam += x[i];
 
-	gam = gam / n - log10( pow(10.0,x[imin]) - 0.5 );
+	gam = gam / n - log10(pow(10.0,x[imin]) - 0.5 );
 
 	return 1.0 + 1.0/gam;
 }
