@@ -51,9 +51,6 @@ test_misc: test_misc.o misc.o
 test_misc.o: test_misc_cpp.cpp
 	$(CXX) $(MSGS) $(OPTFLAGS) -I include -lboost_unit_test_framework-mt -c $< -o $@
 
-misc.o: misc.cpp
-	$(CXX) -I include -c $< -o $@
-
 # -=-=-=-=-=-=-=-=-=-= rrmapgen =-=-=-=-=-=-=-=-=-=-= #
 #  rrmapgen shares much of the source code with rrstdmp but 
 #    outputs trajectories of sticking regions to file for later
