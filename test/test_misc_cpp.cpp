@@ -5,8 +5,9 @@
 #include <cmath>
 #include <iostream>
 
-// Library to be tested
+// Libraries to be tested
 #include "misc.h"
+#include "rr.h"
 
 
 BOOST_AUTO_TEST_CASE( test1 )
@@ -38,16 +39,14 @@ BOOST_AUTO_TEST_CASE( logspacetest )
     range = new double[size];
     logspace(range, size, 0, 9); // Should make a set = {1, 10, 100, 1000, ..., 10^9};
     for (int ii = 0; ii < size; ii++)
-    {
         BOOST_CHECK_EQUAL( range[ii],pow(10,ii) );
-    }
 }
 
 BOOST_AUTO_TEST_CASE( cumSumNormtest )
 {
     double x[10], sum = 0.0;
     double ans[10] = {55.0/55.0, 54.0/55.0, 52.0/55.0, 49.0/55.0, 45.0/55.0, \
-        40.0/55.0, 34.0/55.0, 27.0/55.0, 19.0/55.0, 10.0/55.0};
+                      40.0/55.0, 34.0/55.0, 27.0/55.0, 19.0/55.0, 10.0/55.0};
     for (int ii = 0; ii < 10; ii++)
     {
         x[ii] = static_cast<double>(ii + 1);
@@ -56,7 +55,34 @@ BOOST_AUTO_TEST_CASE( cumSumNormtest )
     cumSumNorm(x,10,sum);
 
     for (int ii = 0; ii < 10; ii++)
-        BOOST_CHECK( abs(ans[ii] - x[ii]) < 1.0e-20 ); // Is this a sufficient comdition?
+        BOOST_CHECK( abs(ans[ii] - x[ii]) < 1.0e-20 ); // Is this a sufficient condition?
+}
+
+int globalWindow = 100, globalOverlap = 50;
+double ge = 0.01;
+
+BOOST_AUTO_TEST_CASE( rr_test )
+{
+
+    int size = 100, rrcntr;
+    double x[size], y[size];
+    double rrCurr = 0.0;
+    for (int ii = 0; ii < size; ii++)
+    {
+        if (true)
+        {
+            x[ii] = 0.0;
+            y[ii] = 0.0;
+        }
+        else
+        {
+            x[ii] = 0.5;
+            y[ii] = 0.5;
+        }
+    }
+    rrCurr = rrInit(x,y,rrcntr);
+
+    std::cout << "rrCurr = " << rrCurr << endl;
 }
 
 //EOF
