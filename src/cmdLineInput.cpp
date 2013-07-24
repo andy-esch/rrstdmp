@@ -87,7 +87,7 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
                         break;
                     case 'b':
                         nBins = atoi(optarg);
-                        if (nBins < 1)
+                        if (nBins <= 1)
                         {
                             cerr << "\aError: number of bins must be larger \
                             than 0." << endl;
