@@ -8,6 +8,8 @@
 // Libraries to be tested
 #include "misc.h"
 #include "rr.h"
+#include "stdmp.h"
+#include "rrmean.h"
 
 
 BOOST_AUTO_TEST_CASE( test1 )
@@ -59,30 +61,29 @@ BOOST_AUTO_TEST_CASE( cumSumNormtest )
 }
 
 int globalWindow = 100, globalOverlap = 50;
-double ge = 0.01;
+double ge = 0.01, k = 0.97163540631/(2.0 * M_PI);
+const double TWOPI = 2.0 * M_PI;
 
 BOOST_AUTO_TEST_CASE( rr_test )
 {
-
     int size = 100, rrcntr;
     double x[size], y[size];
-    double rrCurr = 0.0;
-    for (int ii = 0; ii < size; ii++)
-    {
-        if (true)
-        {
-            x[ii] = 0.0;
-            y[ii] = 0.0;
-        }
-        else
-        {
-            x[ii] = 0.5;
-            y[ii] = 0.5;
-        }
-    }
-    rrCurr = rrInit(x,y,rrcntr);
 
-    std::cout << "rrCurr = " << rrCurr << endl;
+    // Case 1: k = 0; 4-periodic map
+    k = 0;
+    x[0] = 0.0; y[0] = 1.0/4.0;
+    stdmpInit(x,y);
+    BOOST_CHECK_EQUAL(y[0],rrInit(x,y,rrcntr));
+
+    // Case 2: k = k_g; 2-period map
+    k = 0.97163540631/(2.0 * M_PI);
+    x[0] = 0.0; y[0] = 0.5;
+    stdmpInit(x,y);
+    BOOST_CHECK_EQUAL(y[0],rrInit(x,y,rrcntr));
+
+    // Case 3: k = k_g; KAM Torus
+    k = 0.97163540631/(2.0 * M_PI);
+    x[0] = 0.0; y[0] = 
 }
 
 //EOF

@@ -45,7 +45,7 @@ rrstdmp.o: rrstdmp.cpp
 # -=-=-=-=-=-=-=-=-=-= test =-=-=-=-=-=-=-=-=-=-= #
 # Create executable to test function outputs
 
-test_misc: test_misc.o misc.o
+test_misc: test_misc.o misc.o rr.o stdmp.o rrmean.o
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(MSGS) -lboost_unit_test_framework-mt $^ -o $@
 
 test_misc.o: test_misc_cpp.cpp
