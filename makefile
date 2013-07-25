@@ -117,7 +117,7 @@ cleanobjs:
 # Cleans object files
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) rrstdmp.o
+	rm -f $(OBJECTS) rrstdmp.o test.o test_misc.o
 #ifneq ("$(shell ls | grep '.*\.o')","")
 #	@echo "--->  Cleaning object files \n\t\c"
 #	rm $(shell ls | grep ".*\.o")
