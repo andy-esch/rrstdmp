@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 		cout << "\trp threshold (e) = \t " << ge << endl;
 		cout << "\twindow size (w) = \t " << globalWindow << endl;
 		cout << "\twindow overlap (n) = \t " << globalOverlap << endl;
-		cout << "\ttrajectory length (l) =  " << l << endl;
+		cout << "\ttrajectory length (l) =  " << l << cout::scientific << static_cast<double>(l) << endl;
 		cout << "\tnumber of rr values = \t " << winNumMax << endl;
 		cout << "\tsticking threshold (r) = " << thr << endl;
 		cout << "\thistogram bins (b) = \t " << nBins << endl;
