@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( rrInit_test )
     x[0] = 0.112311; y[0] = M_PI / 10.0;
     stdmpInit(x,y);
     double rrCurr = rrInit(x,y,rrcntr);
-    BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.01) < 1.0e-10, \
+    BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.01) < 1.0e-3, \
                         "(rr - 0.01) = " << (rrCurr - 0.01));
 }
 
@@ -102,8 +102,23 @@ BOOST_AUTO_TEST_CASE( rr_test )
     {
         stdmp(x,y);
         rrCurr = rr(x,y,rrcntr);
-        BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-5, \
+        BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-10, \
                             "(rr - 0.01) = " << (rrCurr - 0.01));
+    }
+
+    // case 2: k = 10; stochastic(?) -> RR_avg = recurrence threshold (ge)
+    k = 10;
+    x[0] = M_PI / 10.0; y[0] = M_E / 10.0;
+    stdmpInit(x,y);
+    rrCurr = rrInit(x,y,rrcntr);
+    BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.01) < 1.0e-3, \
+                        "0: (rr - 0.01) = " << (rrCurr - 0.01));
+    for (int ii = 0; ii < 10; ii++)
+    {
+        stdmp(x,y);
+        rrCurr = rr(x,y,rrcntr);
+        BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-3, \
+                            (ii+1) << ": (rr - 0.01) = " << (rrCurr - 0.01));
     }
 }
 
