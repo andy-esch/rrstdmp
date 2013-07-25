@@ -69,10 +69,10 @@ double secantApprox(double xi, double xi_1, const double e, const int iters, \
 		else
 		{
 			xlast = xi;
-			m = n - m; // 1/gam^2 math
-			n = n + m;
-//			n = n + m; // 1/gam math
-//			m = n - m;
+//			m = n - m; // 1/gam^2 math
+//			n = n + m;
+			n = n + m; // 1/gam math
+			m = n - m;
 		}
 	}
 	cout << "Convergence not found!" << endl;
