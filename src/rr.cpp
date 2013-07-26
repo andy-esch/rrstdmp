@@ -25,9 +25,6 @@
  *	Change rrcntr++ in the if statement in "Applying Threshold" to rrtemp++ instead
  */
 
-/* TODO: find out if declararing some values as volatile will help speed
- * up the program
- */
 double rr(double *__restrict__ x, double *__restrict__ y, \
 		  int &__restrict__ rrcntr)
 {
