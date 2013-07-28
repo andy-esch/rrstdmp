@@ -41,6 +41,8 @@ void stdmp(double *__restrict__ x, double *__restrict__ y);
 	}
 } */
 
+void stdmpBack(double *__restrict__ x, double *__restrict__ y);
+
 double stdmpLifted(double, double, const int);
 
 #endif // STDMP_H

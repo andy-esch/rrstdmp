@@ -57,6 +57,33 @@ void stdmp(double *__restrict__ x, double *__restrict__ y)
 	}
 }
 
+// Calculates the standard map in the opposite direction of stdmp()
+void stdmpBack(double *__restrict__ x, double *__restrict__ y)
+{
+	extern int globalWindow, globalOverlap;
+	extern double k;
+	int i;
+	static double modCorr = 100.0; // See note in stdmpInit above
+	static int diff = globalWindow - globalOverlap;
+
+    // Can use valarray shift(diff) instead
+	for ( i = diff; i < globalWindow; i+=2 )
+	{ // copies n overlap values -- assumes (w-n) % 2 = 0
+		x[i - diff] = x[i];
+		y[i - diff] = y[i];
+		x[i - diff + 1] = x[i + 1];
+		y[i - diff + 1] = y[i + 1];
+	}
+
+	for ( i = globalWindow - 1; i >= globalOverlap; i-=2 )
+	{	// calculates new non-overlapping values
+        x[i-1] = fmod(y[i] + x[i] + modCorr, 1.0);
+        y[i-1] = fmod(y[i] + k*sin( TWOPI * x[i-1] ) + modCorr, 1.0);
+		x[i-2] = fmod(y[i-1] + x[i-1] + modCorr, 1.0);
+        y[i-2] = fmod(y[i] + k*sin( TWOPI * x[i] ) + modCorr, 1.0);
+	}
+}
+
 // Calculates the lifted standard map trajectory, returns the (w-1)st value of x
 // Used with secantApprox(...)
 
