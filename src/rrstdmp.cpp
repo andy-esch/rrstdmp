@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 	// Initialize histogram
 	gsl_histogram * h = gsl_histogram_alloc(nBins);
 	double range[nBins+1];
-	logspace(range,nBins+1,1.999,9.001);
+	logspace(range,nBins+1,1.999,l);
 	gsl_histogram_set_ranges(h,range,nBins+1);
 
 	// open initial values file and extract initial values
