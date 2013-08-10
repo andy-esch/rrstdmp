@@ -40,9 +40,7 @@ using std::vector;
 typedef unsigned short usInt;
 
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
-                                                    //** double check this in unit test
 int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern
-                                                    // ** double check this in unit test
 const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
@@ -56,7 +54,7 @@ int main(int argc, char **argv)
 	// Program control variables
 	bool silent = false, isSticky = false;
 	bool doFit = true, publish = true;
-	bool rrtest = false;
+	bool rrtest = false;                        //** On way out because of test suite?
     bool verbose = true;
 
 	// Recurrence rate variables

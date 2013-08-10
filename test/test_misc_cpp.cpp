@@ -59,6 +59,18 @@ int globalWindow = 100, globalOverlap = 50;
 double ge = 0.01, k = 0.97163540631/(2.0 * M_PI);
 const double TWOPI = 2.0 * M_PI;
 
+BOOST_AUTO_TEST_CASE( global_values )
+{
+    BOOST_CHECK_MESSAGE(fabs(k - 0.97163540631/(2.0 * M_PI)) < 1.0e-10,
+                        "k is not equal to set global value");
+    BOOST_CHECK_MESSAGE(fabs(ge - 0.01) < 1.0e-10,
+                        "global recurrence threshold not set correctly");
+    BOOST_CHECK_MESSAGE(globalWindow == 100,
+                        "globalWindow not properly set");
+    BOOST_CHECK_MESSAGE(globalOverlap == 50,
+                        "globalOverlap not properly set");
+}
+
 BOOST_AUTO_TEST_CASE( rrInit_test )
 {
     int size = 100, rrcntr = 0;
