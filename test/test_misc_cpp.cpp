@@ -37,6 +37,24 @@ BOOST_AUTO_TEST_CASE( logspacetest )
     logspace(range, size, 0, 9); // Should make a set = {1, 10, 100, 1000, ..., 10^9};
     for (int ii = 0; ii < size; ii++)
         BOOST_CHECK_EQUAL( range[ii],pow(10,ii) );
+
+    delete [] range;
+    range = NULL;
+
+    // Test for variables acting as min, max
+    double min = 0.0;
+    double max = 10.0;
+    range = new double[size+1];
+    logspace(range,size+1,min,max);
+    for (int ii = 0; ii < size; ii++)
+        BOOST_CHECK_EQUAL( range[ii],pow(10,ii) );
+
+    delete [] range;
+    range = NULL;
+
+    // Test for long int cast as double
+    long maxDouble = 1.0e7;
+    range = new double[size];
 }
 
 BOOST_AUTO_TEST_CASE( cumSumNormtest )
