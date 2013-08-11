@@ -336,8 +336,9 @@ int main(int argc, char **argv)
 		if (resultsLog.is_open())
 		{
 			resultsLog << k*2.0*M_PI << "," << ge << "," << l << "," \
-			<< globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
-			<< "," << asctime(timeinfo);
+                       << globalWindow << "," << globalOverlap << "," \
+                       << xInit << "," << yInit << "," << t1 << "," \
+                       << asctime(timeinfo);
 //			if (doFit)
 //				resultsLog << m << "," << m2 << ",";
 
@@ -346,9 +347,9 @@ int main(int argc, char **argv)
 		} else
 		{
 			cerr << "Error: Could not open rrstdmp_results.log" << endl;
-			cerr << k*2.0*M_PI << "," << ge << "," << l << "," \
-            << globalWindow << "," << globalOverlap << "," << xInit << "," << yInit << "," << t1 \
-			<< "," << asctime(timeinfo);
+			cerr << k * TWOPI << "," << ge << "," << l << "," << globalWindow \
+                 << "," << globalOverlap << "," << xInit << "," << yInit \
+                 << "," << t1 << "," << asctime(timeinfo);
 		}
 	}
 
