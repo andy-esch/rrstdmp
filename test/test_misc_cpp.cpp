@@ -52,9 +52,12 @@ BOOST_AUTO_TEST_CASE( logspacetest )
     delete [] range;
     range = NULL;
 
-    // Test for long int cast as double
-    long maxDouble = 1.0e7;
+    // Test for long int cast as double and then its log10() is taken
+    long maxDouble = 1.0e9;
     range = new double[size];
+    logspace(range, size, 0, log10(static_cast<double>(maxDouble)));
+    for (int ii = 0; ii < size; ii++)
+        BOOST_CHECK_EQUAL( range[ii], pow(10,ii) );
 }
 
 BOOST_AUTO_TEST_CASE( cumSumNormtest )
