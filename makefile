@@ -3,7 +3,7 @@
 vpath %.cpp src:test
 vpath %.h include
 
-CXX = g++-mp-4.5
+CXX = g++-mp-4.7
 CXXFLAGS = -L/opt/local/lib -lgsl -I/opt/local/include -I include
 OPTFLAGS = -funroll-loops -O3
 MSGS = -Wall -Weffc++
