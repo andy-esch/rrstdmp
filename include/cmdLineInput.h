@@ -14,6 +14,7 @@
 #include <iostream> // cin, cout, endl
 #include <cstdlib>  // atoi, atof, exit(),   
 #include <cstring> // strcpy
+#include <getopt.h>
 
 #include "usage.h"
 
