@@ -38,13 +38,15 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 	int i, j;
 	static double wsquared = static_cast<double> (globalWindow*globalWindow);
 
-//#pragma omp parallel for default(none) private(dx,dy,dmax,i,j,chx,chy) \
+//#pragma omp parallel for default(none) private(dx,dy,dmax,i,j) \
 //shared(x,y,diff) schedule(guided) reduction(+:RR,rrtemp)
 	for (i = globalOverlap; i < globalWindow; i++)
 	{
 		for (j = 0; j < i; j++)
 		{
-			// Calculate recurrences; check if they are on opposite edges
+			// Calculate recurrences; check if they are on opposite edges   //** Are you confident this is sufficient?  (should i and j be swapped?)
+                                                                            //** Perhaps it is because we're only considering 1/2 the triangle?
+                                                                            //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
 			if ( (x[i] > (1.0 - ge) && x[j] < ge) )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
@@ -62,7 +64,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			if (dmax < ge)
 			{
 				RR++;
-				if ( (i > diff) && (j >= diff) )
+				if ( (i > diff) && (j >= diff) )  //** This is an error: it should be i > diff && j > i (or reversed)
 					rrcntr++;
 			}
 		}
