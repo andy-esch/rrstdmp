@@ -30,7 +30,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 {
 	extern int globalWindow, globalOverlap;
 	extern double ge;
-	double dx, dy, dmax;
+	double dx, dy, dmax, minusge = 1.0 - ge;
 	int RR = rrcntr;	// Transfer previous overlap into current count
 	rrcntr = 0;			// Reset overlap for this window
 //	int rrtemp = 0;
@@ -47,12 +47,12 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			// Calculate recurrences; check if they are on opposite edges   //** Are you confident this is sufficient?  (should i and j be swapped?)
                                                                             //** Perhaps it is because we're only considering 1/2 the triangle?
                                                                             //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
-			if ( (x[i] > (1.0 - ge) && x[j] < ge) )
+			if ( (x[i] > minusge && x[j] < ge) )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
 				dx = fabs(x[i] - x[j]);
 
-			if ( (y[i] > (1.0 - ge) && y[j] < ge) )
+			if ( (y[i] > minusge && y[j] < ge) )
 				dy = fabs(1.0 - y[i] + y[j]);
 			else
 				dy = fabs(y[i] - y[j]);
@@ -64,7 +64,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			if (dmax < ge)
 			{
 				RR++;
-				if ( (i > diff) && (j >= diff) )  //** This is an error: it should be i > diff && j > i (or reversed)
+				if ( (i > diff) && (j >= i) )
 					rrcntr++;
 			}
 		}
