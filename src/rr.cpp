@@ -64,7 +64,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			if (dmax < ge)
 			{
 				RR++;
-				if ( (i > diff) && (j >= i) )
+				if ( (i > diff) && (j > i) )
 					rrcntr++;
 			}
 		}
