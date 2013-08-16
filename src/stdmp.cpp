@@ -18,43 +18,45 @@ void stdmpInit(double *__restrict__ x, double *__restrict__ y)
 {
 	extern double k;
 	extern int globalWindow;
-	static double modCorr = 100.0;	// Offset for values that stray below zero
+	static double modCorr = 64.0;	// Offset for values that stray below zero
 									// ceil(1.75 + k2pi) is sufficient
-	for ( int i = 1; i < globalWindow; i++)
+	for ( int i = 1; i < globalWindow; i++ )
 	{
-		y[i] = fmod(y[i-1] + k*sin( TWOPI * x[i-1] ) + modCorr, 1.0);
+		y[i] = fmod(y[i-1] + k * sin( TWOPI * x[i-1] ) + modCorr, 1.0);
 		x[i] = fmod(y[i] + x[i-1] + modCorr, 1.0);
  	}
 }
 
-/* TODO: Find out if changing some of the values in this program to volatile
- * will help speed it up
- * Also: What about inline qualifiers?
+
+/* Also: What about inline qualifiers?
  */
 void stdmp(double *__restrict__ x, double *__restrict__ y)
 {
 	extern int globalWindow, globalOverlap;
 	extern double k;
 	int i;
-	static double modCorr = 100.0; // See note in stdmpInit above
+	static double modCorr = 64.0; // See note in stdmpInit above
 	static int diff = globalWindow - globalOverlap;
-	
-    // Can use valarray shift(diff) instead
-	for ( i = diff; i < globalWindow; i+=2 )
-	{ // copies n overlap values -- assumes (w-n) % 2 = 0
-		x[i - diff] = x[i];
-		y[i - diff] = y[i];
-		x[i - diff + 1] = x[i + 1];
-		y[i - diff + 1] = y[i + 1];
-	}
 
-	for ( i = globalOverlap; i < globalWindow; i+=2 )
-	{	// calculates new non-overlapping values
-		y[i] = fmod(y[i-1] + k*sin( TWOPI * x[i-1] ) + modCorr, 1.0);
-		x[i] = fmod(y[i] + x[i-1] + modCorr, 1.0);
-		y[i+1] = fmod(y[i] + k*sin( TWOPI * x[i] ) + modCorr, 1.0);
-		x[i+1] = fmod(y[i+1] + x[i] + modCorr, 1.0);
-	}
+    // Can use valarray shift(diff) instead
+#pragma omp parallel for shared(diff,globalWindow,x,y) \
+                         private(i) \
+                         schedule(static,13)
+    for ( i = diff; i < globalWindow; i+=2 )
+    { // copies n overlap values -- assumes (w-n) % 2 = 0
+        x[i - diff] = x[i];
+        y[i - diff] = y[i];
+        x[i - diff + 1] = x[i + 1];
+        y[i - diff + 1] = y[i + 1];
+    } /* End of parallel for region */
+
+    for ( i = globalOverlap; i < globalWindow; i+=2 )
+    {	// calculates new non-overlapping values
+        y[i] = fmod(y[i-1] + k*sin( TWOPI * x[i-1] ) + modCorr, 1.0);
+        x[i] = fmod(y[i] + x[i-1] + modCorr, 1.0);
+        y[i+1] = fmod(y[i] + k*sin( TWOPI * x[i] ) + modCorr, 1.0);
+        x[i+1] = fmod(y[i+1] + x[i] + modCorr, 1.0);
+    }
 }
 
 // Calculates the standard map in the opposite direction of stdmp()
