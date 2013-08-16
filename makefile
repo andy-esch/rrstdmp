@@ -5,7 +5,7 @@ vpath %.h include
 
 CXX = g++-mp-4.7
 CXXFLAGS = -L/opt/local/lib -lgsl -I/opt/local/include -I include
-OPTFLAGS = -O3 -fopenmp
+OPTFLAGS = -funit-at-a-time -O3 -fopenmp
 MSGS = -Wall -Weffc++
 
 OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o cmdLineInput.o
