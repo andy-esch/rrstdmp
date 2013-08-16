@@ -38,8 +38,10 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 	int i, j;
 	static double wsquared = static_cast<double> (globalWindow*globalWindow);
 
-//#pragma omp parallel for default(none) private(dx,dy,dmax,i,j) \
-//shared(x,y,diff) schedule(guided) reduction(+:RR,rrtemp)
+//#pragma omp parallel for private(i,j,dx,dy,dmax) \
+                         shared(x,y,ge,minusge,diff,RR,rrcntr) \
+                         schedule(guided) \
+                         reduction(+:RR)
 	for (i = globalOverlap; i < globalWindow; i++)
 	{
 		for (j = 0; j < i; j++)
