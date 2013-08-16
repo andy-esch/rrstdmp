@@ -42,13 +42,18 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
                          shared(x,y,ge,minusge,diff,RR,rrcntr) \
                          schedule(guided) \
                          reduction(+:RR)
-	for (i = globalOverlap; i < globalWindow; i++)
+
+// Region 1 -- Copied from previous region (copy rrcntr into RR?)
+
+// Regions 2/3
+    for (i = 0; i < 50; i++)
 	{
-		for (j = 0; j < i; j++)
+		for (j = 50; j < 100; j++)
 		{
 			// Calculate recurrences; check if they are on opposite edges   //** Are you confident this is sufficient?  (should i and j be swapped?)
                                                                             //** Perhaps it is because we're only considering 1/2 the triangle?
                                                                             //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
+            // Can these if statements be amenable to #pragma omp sections?
 			if ( (x[i] > minusge && x[j] < ge) )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
@@ -64,14 +69,28 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 
 			// Apply Threshold
 			if (dmax < ge)
-			{
 				RR++;
-				if ( (i > diff) && (j > i) )
-					rrcntr++;
-			}
 		}
 	} /*** End of Parallel Section ***/
 
+
+// Region 4
+    for (i = 50; i < 100; i++)
+    {
+        for (j = 50; j < i; j++)
+        {
+            if ( (x[i] > minusge && x[j] < ge) )
+				dx = fabs(1.0 - x[i] + x[j]);
+			else
+				dx = fabs(x[i] - x[j]);
+
+			if ( (y[i] > minusge && y[j] < ge) )
+				dy = fabs(1.0 - y[i] + y[j]);
+			else
+				dy = fabs(y[i] - y[j]);
+        }
+
+    }
 //	rrcntr = rrtemp;
 
 	return ( double(2*RR + globalWindow) / wsquared );
