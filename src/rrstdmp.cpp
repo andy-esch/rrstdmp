@@ -399,7 +399,7 @@ int main(int argc, char **argv)
         double histSum = gsl_histogram_sum(h);
         vector<int> binTimes;
 
-        if (verbose)
+        if (verbose && false)
             printHistogram(h);
 
         // Find non-zero bins and store their indices in the vector binTimes[]
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
             if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
                 binTimes.push_back(ii);
 
-        if (verbose)
+        if (verbose && false)
             cout << "binTimes.size() = " << binTimes.size() << endl;
 
         // Create vectors to store the x and y histogram values that are
@@ -420,7 +420,7 @@ int main(int argc, char **argv)
             xTimes[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
         }
 
-        if (verbose)
+        if (verbose && false)
             printXY(xTimes,yCount,binTimes.size());
 
         // Accumulate y component for CDF
@@ -452,7 +452,7 @@ int main(int argc, char **argv)
                 xTimes[i] = log10(xTimes[i]);
                 yCount[i] = log10(yCount[i]);
             }
-            if (verbose)
+            if (verbose && false)
                 printXY(xTimes,yCount,binTimes.size());
 
             double b, m, varb, covbm, varm, sumsq;
@@ -465,12 +465,12 @@ int main(int argc, char **argv)
  */
 //            std::string outputOne = "| \t(" + m + " +/- " + sqrt(varm) + ")x + (" + b + " +/- " + sqrt(varb) + " ) |\n";
             cout.setf(ios::fixed,ios::floatfield);
-            cout << "+----------------------------+" << endl;
-            cout << "| Ordinary log-log fit:" << endl;
+            cout << "+--------------------------------------------------------+" << endl;
+            cout << "| Ordinary log-log fit:                                  |" << endl;
             cout << "| \t(" << m << " +/- " << sqrt(varm) << ")x + (" << b << " +/- " << sqrt(varb) << " ) |" << endl;
-            cout << "| MLE fit:" << endl;
-            cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "  |" << endl; 
-            cout << "+----------------------------+" << endl;
+            cout << "| MLE fit:                                               |" << endl;
+            cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "               |" << endl; 
+            cout << "+--------------------------------------------------------+" << endl;
         }
     }
 
