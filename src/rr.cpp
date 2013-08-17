@@ -54,7 +54,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
                                                                             //** Perhaps it is because we're only considering 1/2 the triangle?
                                                                             //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
             // Can these if statements be amenable to #pragma omp sections?
-			if ( (x[i] > minusge && x[j] < ge) )
+			if ( x[i] > minusge && x[j] < ge )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
 				dx = fabs(x[i] - x[j]);
@@ -71,13 +71,13 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			if (dmax < ge)
 				RR++;
 		}
-	} /*** End of Parallel Section ***/
+	}
 
 
 // Region 4
     for (i = 50; i < 100; i++)
     {
-        for (j = 50; j < i; j++)
+        for (j = 51; j < i; j++)
         {
             if ( (x[i] > minusge && x[j] < ge) )
 				dx = fabs(1.0 - x[i] + x[j]);
@@ -90,8 +90,13 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 				dy = fabs(y[i] - y[j]);
         }
 
+        // Maximum Norm
+        dx > dy ? (dmax = dx) : (dmax = dy);
+
+        // Apply Threshold
+        if (dmax < ge)
+            RR++;
     }
-//	rrcntr = rrtemp;
 
 	return ( double(2*RR + globalWindow) / wsquared );
     /* many calculations could be avoided if threshold is redefined as renormed 
@@ -102,10 +107,6 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
      stand.
      */
 }
-
-/*while (k<w/(w-n) && i > w-diff && j >= w-diff) {	// rough idea on how to implement 
- andy												// the multiple window-overlap
- }*/												// idea
 
 
 double rrInit(double *__restrict__ x, double *__restrict__ y, \
