@@ -155,4 +155,33 @@ BOOST_AUTO_TEST_CASE( rr_test )
     }
 }
 
+// Compare the copied values between various runs of stdmp()
+BOOST_AUTO_TEST_CASE( stdmpTester )
+{
+    k = 0.97163540631/(2.0 * M_PI);
+    double x1[100], y1[100];
+    double x2[100], y2[100];
+    x1[0] = 0.05; y1[0] = 0.0625;
+    x2[0] = 0.05; y2[0] = 0.0625;
+
+    stdmpInit(x1,y1);
+    stdmpInit(x2,y2);
+    stdmp(x2,y2);
+
+    for (int ii = 0; ii < 50; ii++)
+    {
+        BOOST_CHECK_MESSAGE(fabs(x1[ii+50] - x2[ii]) < 1.0e-5, \
+                            "Value x[" << ii << "] did not match up\n");
+        BOOST_CHECK_MESSAGE(fabs(y1[ii+50] - y2[ii]) < 1.0e-5, \
+                            "Value y[" << ii << "] did not match up\n");
+    }
+
+
+
+}
+
+
+
+
+
 //EOF
