@@ -38,10 +38,10 @@ void stdmp(double *__restrict__ x, double *__restrict__ y)
 	static double modCorr = 64.0; // See note in stdmpInit above
 	static int diff = globalWindow - globalOverlap;
 
-    // Can use valarray shift(diff) instead
-#pragma omp parallel for shared(diff,globalWindow,x,y) \
-                         private(i) \
-                         schedule(static,13)
+    //** Can use valarray shift(diff) instead?
+//#pragma omp parallel for shared(diff,globalWindow,x,y) \
+//                         private(i) \
+//                         schedule(static,16)
     for ( i = diff; i < globalWindow; i+=2 )
     { // copies n overlap values -- assumes (w-n) % 2 = 0
         x[i - diff] = x[i];

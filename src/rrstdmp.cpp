@@ -39,6 +39,8 @@ using std::vector;
 
 typedef unsigned short usInt;
 
+
+//** Move these down into main() function
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
 int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern
 const double TWOPI = 2.0 * M_PI;
@@ -47,12 +49,15 @@ int main(int argc, char **argv)
 {
 	char inFilename[60] = "input1";
 	char outFilename[60] = "rr_histogram.txt";
+    ofstream fid;                                       // Output file streams
+
+    // Data and variables for run
 	double x[globalWindow], y[globalWindow];
 	unsigned int diff = globalWindow - globalOverlap;   // Window size and overlap
-	ofstream fid;                                       // Output file streams
+
 
 	// Program control variables
-	bool silent = false, isSticky = false;
+	bool silent = false;
 	bool doFit = true, publish = true;
 	bool rrtest = false;                        //** On way out because of test suite?
     bool verbose = true;
@@ -62,6 +67,13 @@ int main(int argc, char **argv)
 	int rrcntr = 0;                                     // Counter for redundant rp recurrences
     long int currWin = 1, rrEnter = 1, tau = 1;
     long int winNumMax, l = 25000000;
+    double wsquared = static_cast<double>(globalWindow * globalWindow);
+
+    double dx = 0.0, dy = 0.0, dmax = 0.0, minusge = 1.0 - ge;
+    int RR = 0;
+
+    int ii = 0, jj = 0;
+    const double modCorr = 64.0;
 
 	// Initialize runtime information
 	time_t t1 = time(NULL), t2, rawTime;        //** Initialize t2 and rawTime to something?
@@ -156,8 +168,88 @@ int main(int argc, char **argv)
 	// If begin in sticky event, exit event
 	while ( rrCurr > thr && winNumMax != currWin )
 	{
-		stdmp(x,y);
-		rrCurr = rr(x,y,rrcntr);
+        /* standard map section */
+        // stdmp copy from previous run
+        for ( ii = diff; ii < globalWindow; ii += 2 )
+        { // copies n overlap values -- assumes (w-n) % 2 = 0
+            x[ii - diff] = x[ii];
+            y[ii - diff] = y[ii];
+            x[ii - diff + 1] = x[ii + 1];
+            y[ii - diff + 1] = y[ii + 1];
+        }
+
+        // stdmp calculated new values
+        for ( ii = globalOverlap; ii < globalWindow; ii+=2 )
+        {	// calculates new non-overlapping values
+            y[ii] = fmod(y[ii-1] + k * sin( TWOPI * x[ii-1] ) + modCorr, 1.0);
+            x[ii] = fmod(y[ii] + x[ii-1] + modCorr, 1.0);
+            y[ii+1] = fmod(y[ii] + k*sin( TWOPI * x[ii] ) + modCorr, 1.0);
+            x[ii+1] = fmod(y[ii+1] + x[ii] + modCorr, 1.0);
+        }
+
+        /* recurrence rate section */
+        // Region 1
+        RR = rrcntr;
+        rrcntr = 0;
+
+        // Region 2
+//		rrCurr = rr(x,y,rrcntr);
+        for (ii = 0; ii < 50; ii++)
+        {
+            for (jj = 50; jj < 100; jj++)
+            {
+                // Can these if statements be amenable to #pragma omp sections?
+                //** Are you confident this is sufficient?  (should i and j be swapped?)
+                //** Perhaps it is because we're only considering 1/2 the triangle?
+                //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
+
+                // Calculate recurrences; check if they are on opposite edges
+                if ( x[ii] > minusge && x[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + x[jj]);
+                else
+                    dx = fabs(x[ii] - x[jj]);
+
+                if ( y[ii] > minusge && y[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + y[jj]);
+                else
+                    dy = fabs(y[ii] - y[jj]);
+                
+                // Maximum Norm
+                dx > dy ? (dmax = dx) : (dmax = dy);
+                
+                // Apply Threshold
+                if (dmax < ge)
+                    RR++;
+            }
+        }
+
+        // Region 3
+        for (ii = 50; ii < 99; ii++)
+        {
+            for (jj = ii+1; jj < 100; jj++)
+            {
+                if ( x[ii] > minusge && x[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + x[jj]);
+                else
+                    dx = fabs(x[ii] - x[jj]);
+
+                if ( y[ii] > minusge && y[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + y[jj]);
+                else
+                    dy = fabs(y[ii] - y[jj]);
+
+                // Maximum Norm
+                dx > dy ? (dmax = dx) : (dmax = dy);
+                
+                // Apply Threshold
+                if (dmax < ge)
+                    rrcntr++;
+            }
+        }
+        
+        RR += rrcntr;
+        rrCurr = static_cast<double>(2 * RR + globalWindow) / wsquared;
+
         currWin++;
 	}
 
@@ -176,9 +268,89 @@ int main(int argc, char **argv)
 
     while ( currWin < winNumMax )
 	{
-		stdmp(x,y);
+        /* standard map section */
+        // stdmp copy from previous run
+        for ( ii = diff; ii < globalWindow; ii += 2 )
+        { // copies n overlap values -- assumes (w-n) % 2 = 0
+            x[ii - diff] = x[ii];
+            y[ii - diff] = y[ii];
+            x[ii - diff + 1] = x[ii + 1];
+            y[ii - diff + 1] = y[ii + 1];
+        }
+
+        // stdmp calculated new values
+        for ( ii = globalOverlap; ii < globalWindow; ii+=2 )
+        {	// calculates new non-overlapping values
+            y[ii] = fmod(y[ii-1] + k * sin( TWOPI * x[ii-1] ) + modCorr, 1.0);
+            x[ii] = fmod(y[ii] + x[ii-1] + modCorr, 1.0);
+            y[ii+1] = fmod(y[ii] + k*sin( TWOPI * x[ii] ) + modCorr, 1.0);
+            x[ii+1] = fmod(y[ii+1] + x[ii] + modCorr, 1.0);
+        }
+
+        /* recurrence rate section */
 		rrLast = rrCurr;
-		rrCurr = rr(x,y,rrcntr);
+
+        // Region 1
+        RR = rrcntr;
+        rrcntr = 0;
+
+        // Region 2
+        //		rrCurr = rr(x,y,rrcntr);
+        for (ii = 0; ii < 50; ii++)
+        {
+            for (jj = 50; jj < 100; jj++)
+            {
+                // Can these if statements be amenable to #pragma omp sections?
+                //** Are you confident this is sufficient?  (should i and j be swapped?)
+                //** Perhaps it is because we're only considering 1/2 the triangle?
+                //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
+
+                // Calculate recurrences; check if they are on opposite edges
+                if ( x[ii] > minusge && x[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + x[jj]);
+                else
+                    dx = fabs(x[ii] - x[jj]);
+
+                if ( y[ii] > minusge && y[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + y[jj]);
+                else
+                    dy = fabs(y[ii] - y[jj]);
+
+                // Maximum Norm
+                dx > dy ? (dmax = dx) : (dmax = dy);
+
+                // Apply Threshold
+                if (dmax < ge)
+                    RR++;
+            }
+        }
+
+        // Region 3
+        for (ii = 50; ii < 99; ii++)
+        {
+            for (jj = ii+1; jj < 100; jj++)
+            {
+                if ( x[ii] > minusge && x[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + x[jj]);
+                else
+                    dx = fabs(x[ii] - x[jj]);
+
+                if ( y[ii] > minusge && y[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + y[jj]);
+                else
+                    dy = fabs(y[ii] - y[jj]);
+
+                // Maximum Norm
+                dx > dy ? (dmax = dx) : (dmax = dy);
+
+                // Apply Threshold
+                if (dmax < ge)
+                    rrcntr++;
+            }
+        }
+
+        RR += rrcntr;
+        rrCurr = static_cast<double>(2 * RR + globalWindow) / wsquared;
 
 		if (rrCurr > thr && rrLast <= thr)
 		{
