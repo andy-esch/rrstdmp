@@ -40,10 +40,12 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 	{
 		for (j = 50; j < 100; j++)
 		{
-			// Calculate recurrences; check if they are on opposite edges   //** Are you confident this is sufficient?  (should i and j be swapped?)
-                                                                            //** Perhaps it is because we're only considering 1/2 the triangle?
-                                                                            //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
             // Can these if statements be amenable to #pragma omp sections?
+            //** Are you confident this is sufficient?  (should i and j be swapped?)
+            //** Perhaps it is because we're only considering 1/2 the triangle?
+            //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
+
+			// Calculate recurrences; check if they are on opposite edges
 			if ( x[i] > minusge && x[j] < ge )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
@@ -65,9 +67,9 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 
 
 // Region 4
-    for (i = 50; i < 100; i++)
+    for (i = 50; i < 99; i++)
     {
-        for (j = 51; j < i; j++)
+        for (j = i+1; j < 100; j++)
         {
             if ( x[i] > minusge && x[j] < ge )
 				dx = fabs(1.0 - x[i] + x[j]);
@@ -111,7 +113,7 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 	rrcntr = 0;
 	int diff = globalWindow - globalOverlap;
 
-	for (int i = 1; i < globalWindow; i++) 
+	for (int i = 1; i < globalWindow; i++)
 	{
 		for (int j = 0; j < i; j++)
 		{
@@ -119,7 +121,7 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
 				dx = fabs(x[i] - x[j]);
-			
+
 			if ( y[i] > (1.0 - ge) && y[j] < ge )
 				dy = fabs(1.0 - y[i] + y[j]);
 			else
@@ -129,7 +131,7 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 			dx > dy ? (dmax = dx) : (dmax = dy);
 
 			// apply threshold
-			if (dmax < ge) 
+			if (dmax < ge)
 			{
 				RR++;
 				if ( (i > diff) && (j >= diff) )
