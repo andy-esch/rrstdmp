@@ -23,7 +23,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 	extern double ge;
 	double dx = 0.0, dy = 0.0, dmax = 0.0, minusge = 1.0 - ge;
 	int RR = rrcntr;	// Transfer previous overlap into current count
-//	rrcntr = 0;			// Reset overlap for this window
+	rrcntr = 0;			// Reset overlap for this window
 	static int diff = globalWindow - globalOverlap;
 	int i, j;
 	static double wsquared = static_cast<double> (globalWindow*globalWindow);
@@ -65,8 +65,6 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 				RR++;
 		}
 	}
-    std::cout << "RR - rrcntr = " << (RR-rrcntr) << std::endl;
-    rrcntr = 0;
 
 // Region 3
     for (i = 50; i < 99; i++)
@@ -82,18 +80,17 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 				dy = fabs(1.0 - y[i] + y[j]);
 			else
 				dy = fabs(y[i] - y[j]);
+
+            // Maximum Norm
+            dx > dy ? (dmax = dx) : (dmax = dy);
+
+            // Apply Threshold
+            if (dmax < ge)
+                rrcntr++;
         }
-
-        // Maximum Norm
-        dx > dy ? (dmax = dx) : (dmax = dy);
-
-        // Apply Threshold
-        if (dmax < ge)
-            rrcntr++;
     }
 
     RR += rrcntr;
-    std::cout << "RR = " << RR << ", rrcntr = " << rrcntr << std::endl;
 
 	return ( static_cast<double>(2 * RR + globalWindow) / wsquared );
     /* many calculations could be avoided if threshold is redefined as renormed 
@@ -141,9 +138,6 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 			}
 		}
 	}
-
-    std::cout << "rrInit() data:" << std::endl;
-    std::cout << "\tRR = " << RR << ", rrcntr = " << rrcntr << std::endl;
 
 	return (static_cast<double>(2 * RR + globalWindow) / static_cast<double>(globalWindow*globalWindow));
 }
