@@ -1,6 +1,6 @@
 // Compile with g++ -otest -lboost_unit_test_framework TestExample.cpp -L/opt/local/lib -I/opt/local/include
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE rrstdmp_test
+#define BOOST_TEST_MODULE test_misc
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 #include <iostream>
@@ -92,6 +92,34 @@ BOOST_AUTO_TEST_CASE( global_values )
                         "globalOverlap not properly set");
 }
 
+BOOST_AUTO_TEST_CASE( stdmp_period_test )
+{
+    int size = 100;
+    double x[size], y[size], runner = 0.0;
+    x[0] = 0.0; y[0] = 0.25;
+    k = 0;
+
+    stdmpInit(x,y);
+    for (int ii = 0; ii < size; ii++)
+    {
+        runner = static_cast<double>(ii % 4) * 0.25;
+        BOOST_CHECK_MESSAGE(fabs(x[ii] - runner) < 1.0e-5, \
+                            "x[" << ii << "]");
+        BOOST_CHECK_MESSAGE(fabs(y[ii] - 0.25) < 1.0e-5, \
+                            "y[" << ii << "]");
+    }
+
+    stdmp(x,y);
+    for (int ii = 0; ii < size; ii++)
+    {
+        runner = static_cast<double>((ii + 2) % 4) * 0.25;
+        BOOST_CHECK_MESSAGE(fabs(x[ii] - runner) < 1.0e-5, \
+                            "x[" << ii << "]");
+        BOOST_CHECK_MESSAGE(fabs(y[ii] - 0.25) < 1.0e-5, \
+                            "y[" << ii << "]");
+    }
+}
+
 BOOST_AUTO_TEST_CASE( rrInit_test )
 {
     int size = 100, rrcntr = 0;
@@ -110,20 +138,22 @@ BOOST_AUTO_TEST_CASE( rrInit_test )
     BOOST_CHECK_EQUAL(y[0],rrInit(x,y,rrcntr));
 
     // Case 3: k = 10; randomly chosen initial conditions
+    // Expectation: RR = 1% of phase space (bc of chosen threshold ge)
     k = 10.0;
     x[0] = 0.112311; y[0] = M_PI / 10.0;
     stdmpInit(x,y);
     double rrCurr = rrInit(x,y,rrcntr);
     BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.01) < 1.0e-3, \
-                        "3: (rr - 0.01) = " << (rrCurr - 0.01));
+                        "rrInit 3: (rr - 0.01) = " << (rrCurr - 0.01));
 }
 
 BOOST_AUTO_TEST_CASE( rr_test )
 {
     int size = 100, rrcntr = 0;
-    double x[size], y[size], rrCurr;
+    double x[size], y[size], rrCurr = 0.0;
 
     // case 1: k = 0; 4-periodic map
+    // RR should = 1200 [sum(100 - 4 * n)_n=1->(100/4) = 1200]
     k = 0;
     x[0] = 0.0; y[0] = 1.0 / 4.0;
     stdmpInit(x,y);
@@ -135,8 +165,8 @@ BOOST_AUTO_TEST_CASE( rr_test )
     {
         stdmp(x,y);
         rrCurr = rr(x,y,rrcntr);
-        BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-3, \
-                            (ii+1) << ": (rr - 0.25) = " << (rrCurr - 0.25));
+        BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-4, \
+                            "Case 1." << (ii+1) << ": (rr - 0.25) = " << (rrCurr - 0.25));
     }
 
     // case 2: k = 10; stochastic(?) -> RR_avg =~ recurrence threshold (ge)
@@ -175,9 +205,6 @@ BOOST_AUTO_TEST_CASE( stdmpTester )
         BOOST_CHECK_MESSAGE(fabs(y1[ii+50] - y2[ii]) < 1.0e-5, \
                             "Value y[" << ii << "] did not match up\n");
     }
-
-
-
 }
 
 
