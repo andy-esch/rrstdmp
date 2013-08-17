@@ -14,6 +14,7 @@
  */
 
 #include "rr.h"
+#include <iostream>
 
 double rr(double *__restrict__ x, double *__restrict__ y, \
 		  int &__restrict__ rrcntr)
@@ -35,7 +36,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 // Region 1 -- Copied from previous region (copy rrcntr into RR?) -- see definitions above
 
 
-// Regions 2/3
+// Regions 2
     for (i = 0; i < 50; i++)
 	{
 		for (j = 50; j < 100; j++)
@@ -66,7 +67,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 	}
 
 
-// Region 4
+// Region 3
     for (i = 50; i < 99; i++)
     {
         for (j = i+1; j < 100; j++)
@@ -91,8 +92,9 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
     }
 
     RR += rrcntr;
+    std::cout << "RR = " << RR << ", rrcntr = " << rrcntr << std::endl;
 
-	return ( double(2*RR + globalWindow) / wsquared );
+	return ( static_cast<double>(2 * RR + globalWindow) / wsquared );
     /* many calculations could be avoided if threshold is redefined as renormed 
      value = (thrsOld * wsquared - globalWindow) / 2.0
      If 10^6 runs through rr are given, then 4x as many calcs can be avoided
@@ -108,14 +110,13 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 {
 	extern int globalWindow, globalOverlap;
 	extern double ge;
-	double dx, dy, dmax;
+	double dx = 0.0, dy = 0.0, dmax = 0.0;
 	int RR = 0;
 	rrcntr = 0;
-	int diff = globalWindow - globalOverlap;
 
-	for (int i = 1; i < globalWindow; i++)
+	for (int i = 0; i < 99; i++)
 	{
-		for (int j = 0; j < i; j++)
+		for (int j = i+1; j < 100; j++)
 		{
 			if ( x[i] > (1.0 - ge) && x[j] < ge )
 				dx = fabs(1.0 - x[i] + x[j]);
@@ -134,11 +135,14 @@ double rrInit(double *__restrict__ x, double *__restrict__ y, \
 			if (dmax < ge)
 			{
 				RR++;
-				if ( (i > diff) && (j >= diff) )
+				if ( (i >= 50) && (j > 50) )
 					rrcntr++;
 			}
 		}
 	}
 
-	return (double(2*RR+globalWindow)/double(globalWindow*globalWindow));
+    std::cout << "rrInit() data:" << std::endl;
+    std::cout << "\tRR = " << RR << ", rrcntr = " << rrcntr << std::endl;
+
+	return (static_cast<double>(2 * RR + globalWindow) / static_cast<double>(globalWindow*globalWindow));
 }

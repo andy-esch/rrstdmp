@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( rr_test )
     stdmpInit(x,y);
     rrCurr = rrInit(x,y,rrcntr);
     BOOST_CHECK_MESSAGE(fabs(rrCurr - 0.25) < 1.0e-5, \
-                        "0: (rr - 0.25) = " << (rrCurr - 0.25));
+                        "Case 0: (rr - 0.25) = " << (rrCurr - 0.25));
 
     for (int ii = 0; ii < 10; ii++)
     {
