@@ -15,25 +15,14 @@
 
 #include "rr.h"
 
-/*  #include <omp.h>
- *  Currently in serial form (no OpenMP).
- *  To return to OpenMP form, uncomment the following:
- *		#include <omp.h>
- *		#pragma omp parallel...
- *		int rrtemp = 0;
- *
- *	Change rrcntr++ in the if statement in "Applying Threshold" to rrtemp++ instead
- */
-
 double rr(double *__restrict__ x, double *__restrict__ y, \
 		  int &__restrict__ rrcntr)
 {
 	extern int globalWindow, globalOverlap;
 	extern double ge;
-	double dx, dy, dmax, minusge = 1.0 - ge;
+	double dx = 0.0, dy = 0.0, dmax = 0.0, minusge = 1.0 - ge;
 	int RR = rrcntr;	// Transfer previous overlap into current count
 	rrcntr = 0;			// Reset overlap for this window
-//	int rrtemp = 0;
 	static int diff = globalWindow - globalOverlap;
 	int i, j;
 	static double wsquared = static_cast<double> (globalWindow*globalWindow);
@@ -43,7 +32,8 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
                          schedule(guided) \
                          reduction(+:RR)
 
-// Region 1 -- Copied from previous region (copy rrcntr into RR?)
+// Region 1 -- Copied from previous region (copy rrcntr into RR?) -- see definitions above
+
 
 // Regions 2/3
     for (i = 0; i < 50; i++)
@@ -59,7 +49,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 			else
 				dx = fabs(x[i] - x[j]);
 
-			if ( (y[i] > minusge && y[j] < ge) )
+			if ( y[i] > minusge && y[j] < ge )
 				dy = fabs(1.0 - y[i] + y[j]);
 			else
 				dy = fabs(y[i] - y[j]);
@@ -79,12 +69,12 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
     {
         for (j = 51; j < i; j++)
         {
-            if ( (x[i] > minusge && x[j] < ge) )
+            if ( x[i] > minusge && x[j] < ge )
 				dx = fabs(1.0 - x[i] + x[j]);
 			else
 				dx = fabs(x[i] - x[j]);
 
-			if ( (y[i] > minusge && y[j] < ge) )
+			if ( y[i] > minusge && y[j] < ge )
 				dy = fabs(1.0 - y[i] + y[j]);
 			else
 				dy = fabs(y[i] - y[j]);
@@ -95,8 +85,10 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 
         // Apply Threshold
         if (dmax < ge)
-            RR++;
+            rrcntr++;
     }
+
+    RR += rrcntr;
 
 	return ( double(2*RR + globalWindow) / wsquared );
     /* many calculations could be avoided if threshold is redefined as renormed 
