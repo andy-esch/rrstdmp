@@ -47,9 +47,9 @@ int main(int argc, char **argv)
 {
 	char inFilename[60] = "input1";
 	char outFilename[60] = "rr_histogram.txt";
-	double* x,* y;								// Will be dynamically declared matrices of length w -- should not be dynamically declared since heap is slower than stack?
-	unsigned int diff;                          // Window size and overlap
-	ofstream fid;								// Output file streams
+	double x[globalWindow], y[globalWindow];
+	unsigned int diff = globalWindow - globalOverlap;   // Window size and overlap
+	ofstream fid;                                       // Output file streams
 
 	// Program control variables
 	bool silent = false, isSticky = false;
@@ -58,19 +58,19 @@ int main(int argc, char **argv)
     bool verbose = true;
 
 	// Recurrence rate variables
-	double thr = 0.0, rrLast, rrCurr;		// Sticking Threshold, recurrence rate placeholders
-	int rrcntr = 0;							// Counter for redundant rp recurrences
+	double thr = 0.0, rrLast = 0.0, rrCurr = 0.0;		// Sticking Threshold, recurrence rate placeholders
+	int rrcntr = 0;                                     // Counter for redundant rp recurrences
     long int currWin = 1, rrEnter = 1, tau = 1;
     long int winNumMax, l = 25000000;
 
 	// Initialize runtime information
-	time_t t1 = time(NULL), t2, rawTime;
+	time_t t1 = time(NULL), t2, rawTime;        //** Initialize t2 and rawTime to something?
 	struct tm * timeinfo;
 	time( &rawTime );
 	timeinfo = localtime( &rawTime );
 
 	// Initialize histogram basics
-	int nBins = 50;
+	int nBins = 50;                             //** Perhaps make this something like int(log10(l)) * 10?
 
 	/**********************************************************/
 	// Read commandline input
@@ -98,8 +98,6 @@ int main(int argc, char **argv)
         exit(0);
     }
     // allocate arrays based on input
-	x = new double[globalWindow];
-	y = new double[globalWindow];
     winNumMax = l / diff;                       // calc num of windows
 	if(thr==0.0) thr = rrmean(rrcntr);			// Calculate RR threshold
 
@@ -185,13 +183,11 @@ int main(int argc, char **argv)
 		if (rrCurr > thr && rrLast <= thr)
 		{
             rrEnter = currWin;
-			isSticky = true;
 		}
 		else if (rrCurr <= thr && rrLast > thr)
 		{
             tau = currWin - rrEnter;
 			gsl_histogram_increment(h,static_cast<double> (diff * tau + globalOverlap));
-			isSticky = false;
 		}
         currWin++;
 	}
@@ -203,7 +199,7 @@ int main(int argc, char **argv)
 	cout.setf(ios::floatfield);
 	cout << "Final (x,y) = (" << x[globalWindow-1] << ", " << y[globalWindow-1] << ")" << endl;
 
-	if (1)
+	if (false)
 	{
 		char buff[50];
 		// get the thread number from inFilename, increment it by one
@@ -223,11 +219,6 @@ int main(int argc, char **argv)
 	 add this support.  When I do this, though, I need to get rid of the code
 	 below that removes the bins with no counts.
 	 */
-
-	delete [] x;
-	delete [] y;
-	x = NULL;
-	y = NULL;
 
 	/**********************************************************/
 	/*       Construct CDF                                    */
@@ -249,21 +240,20 @@ int main(int argc, char **argv)
 
         // Create vectors to store the x and y histogram values that are
         //   modified and copied from the histogram information
-        x = new double[binTimes.size()];
-        y = new double[binTimes.size()];
+        double xTimes[binTimes.size()], yCount[binTimes.size()];
 
         for ( int j = binTimes.size()-1; j >= 0; j-- )
         {
-            y[j] = gsl_histogram_get(h,binTimes[j]);
-            x[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
+            yCount[j] = gsl_histogram_get(h,binTimes[j]);
+            xTimes[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
         }
 
         if (verbose)
-            printXY(x,y,binTimes.size());
+            printXY(xTimes,yCount,binTimes.size());
 
         // Accumulate y component for CDF
         // --- Look into the accumulate function that's in either numerics or algorithm...
-        cumSumNorm(y,binTimes.size(),histSum);
+        cumSumNorm(yCount,binTimes.size(),histSum);
 
         // Print to file
         fid.open(outFilename,ios::app);
@@ -271,7 +261,7 @@ int main(int argc, char **argv)
         {
             fid << asctime(timeinfo);
             for (usInt i = 0; i<binTimes.size(); i++)
-                fid << log10(x[i]) << '\t' << log10(y[i]) << endl;
+                fid << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
             fid << "\n\n";
             fid.close();
         } else
@@ -279,7 +269,7 @@ int main(int argc, char **argv)
             cerr << "Error: Could not open " << outFilename << endl;
             cout << "\tPrinting to screen..." << endl;
             for (usInt i = 0; i<binTimes.size(); i++)
-                cout << log10(x[i]) << '\t' << log10(y[i]) << endl;
+                cout << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
         }
 	/**********************************************************/
 	/*    Perform least square linear fit if chosen           */
@@ -287,16 +277,16 @@ int main(int argc, char **argv)
         {
             for (usInt i = 0; i < binTimes.size(); i++)
             {
-                x[i] = log10(x[i]);
-                y[i] = log10(y[i]);
+                xTimes[i] = log10(xTimes[i]);
+                yCount[i] = log10(yCount[i]);
             }
             if (verbose)
-                printXY(x,y,binTimes.size());
+                printXY(xTimes,yCount,binTimes.size());
 
             double b, m, varb, covbm, varm, sumsq;
-            gsl_fit_linear(x,1,y,1, binTimes.size(), &b, &m, \
+            gsl_fit_linear(xTimes,1,yCount,1, binTimes.size(), &b, &m, \
                            &varb, &covbm, &varm, &sumsq);
-            double m2 = -1.0 * mlefit(x,binTimes.size());
+            double m2 = -1.0 * mlefit(xTimes,binTimes.size());
             cout.precision(5);
 /* Structure the output in terms of strings so that the borders can be more responsive?
  * ... Meaning a function like brdrprintr(char* brderchar, int length);
@@ -314,9 +304,6 @@ int main(int argc, char **argv)
 
 	/**********************************************************/
 	// End of program
-
-	delete[] x;
-	delete[] y;
 
 	t2 = time(NULL) - t1;
 	t1 = t2;
