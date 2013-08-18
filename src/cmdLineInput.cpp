@@ -12,9 +12,9 @@
 
 void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, \
                   long & l, double & thr, int & nBins, \
-                  bool & silent, bool & publish, bool & doFit, bool & rrtest)
+                  bool & silent, bool & publish, bool & doFit)
 {
-    const char* optstring(":i:o:e:w:n:l:k:r:b:aspfth?");
+    const char* optstring(":i:o:e:w:n:l:k:r:b:aspfh?");
     extern int optopt;
     double temp2 = 0.0;
 
@@ -110,9 +110,6 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
                         break;
                     case 'f':
                         doFit = false;
-                        break;
-                    case 't': // Provisionary feature: to test the output of rr() to ensure it is correct
-                        rrtest = true;
                         break;
                     case '?':
                         cout << "\aOption '-" << static_cast<char> (optopt) << "' is not valid." << endl;

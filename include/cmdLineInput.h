@@ -28,6 +28,6 @@ extern double k, ge;
 extern int globalWindow, globalOverlap;
 
 void cmdLineInput(int, char**, char *, char*, long&, double&, int&, \
-                  bool&, bool&, bool&, bool&);
+                  bool&, bool&, bool&);
 
 #endif // CMDLINEINPUT_H

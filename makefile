@@ -8,8 +8,8 @@ CXXFLAGS = -L/opt/local/lib -lgsl -I/opt/local/include -I include
 OPTFLAGS = -funit-at-a-time -O3 -fopenmp -std=c++11 -std=gnu++11
 MSGS = -Wall -Weffc++
 
-OBJECTS = usage.o stdmp.o rr.o rrmean.o rrtester.o summaries.o misc.o cmdLineInput.o
-HEADERS = usage.h stdmp.h rr.h rrmean.h rrtester.h summaries.h misc.h cmdLineInput.h
+OBJECTS = usage.o stdmp.o rr.o rrmean.o summaries.o misc.o cmdLineInput.o
+HEADERS = usage.h stdmp.h rr.h rrmean.h summaries.h misc.h cmdLineInput.h
 TESTOBJS = test_misc_cpp.o
 
 BLT = "--->  Making"

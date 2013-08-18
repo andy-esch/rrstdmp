@@ -60,7 +60,6 @@ void usage_rrstdmp(const double e, const double k, long l, \
 	cerr << "    -b <number>   number of histogram bins, default = " << b << endl;
 	cerr << "    -p            turn off publishing of inputs summary to results.log" << endl;
 	cerr << "    -f            perform fits to log-log plot of CDF" << endl;
-	cerr << "    -t            perform a calibration test of the recurrence rate calculator" << endl;
 	cerr << "    -s            silences output, default off" << endl;
 	cerr << "    -h            print this help text" << endl;
 	cerr << endl;

@@ -9,7 +9,6 @@
 #include "misc.h"
 #include "rr.h"
 #include "rrmean.h"
-#include "rrtester.h"
 #include "stdmp.h"
 #include "summaries.h"
 #include "usage.h"
@@ -42,32 +41,29 @@ typedef unsigned short usInt;
 
 
 //** Move these down into main() function
-double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern
-int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern
+double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern //** declare these as constants
+int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern //** Declare these as constants
 const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
 {
 	char inFilename[60] = "input1";
 	char outFilename[60] = "rr_histogram.txt";
-    ofstream fid;                                       // Output file streams
+    ofstream fid;                                       // Output file streams //** Does this need a default initialization?  NULL?
 
     // Data and variables for run
-	double x[globalWindow], y[globalWindow];
+	double x[globalWindow], y[globalWindow];            //** What about creating pointers to constant locations const double *ptr (or double const* ptr?)
 	unsigned int diff = globalWindow - globalOverlap;   // Window size and overlap
 
-
 	// Program control variables
-	bool silent = false;
+	bool silent = false, verbose = false;
 	bool doFit = true, publish = true;
-	bool rrtest = false;                        //** On way out because of test suite?
-    bool verbose = true;
 
 	// Recurrence rate variables
 	double thr = 0.0, rrLast = 0.0, rrCurr = 0.0;		// Sticking Threshold, recurrence rate placeholders
-	int rrcntr = 0;                                     // Counter for redundant rp recurrences
+	int rrcntr = 0;                                     // Counter for redundant rp recurrences  //** Declare as pointer?  __restrict__?? //** Change this to usInt
     long int currWin = 1, rrEnter = 1, tau = 1;
-    long int winNumMax, l = 25000000;
+    long int l = 25000000, winNumMax = l / diff;
     double wsquared = static_cast<double>(globalWindow * globalWindow);
 
     double dx = 0.0, dy = 0.0, dmax = 0.0, minusge = 1.0 - ge;
@@ -87,24 +83,17 @@ int main(int argc, char **argv)
         cout << "Initialized runtime variables" << endl;
 
 	// Initialize histogram basics
-	int nBins = 50;                             //** Perhaps make this something like int(log10(l)) * 10?
+	int nBins = 50;                             //** Perhaps make this something like static_cast<int>(log10(static_cast<double>(l))) * 8?
 
 	/**********************************************************/
 	// Read commandline input
     cmdLineInput(argc, argv, inFilename, outFilename, l, thr, nBins, silent, \
-                 publish, doFit, rrtest);
+                 publish, doFit);
     if (verbose)
         cout << "Input commandline input" << endl;
 
 	/**********************************************************/	
 	//Initialize variables based on commandline
-
-	if (rrtest)
-	{	// if rrtest = true, run rr() diagnostic; exit program
-		cout << "rrtester is currently broken -- exiting program. " << endl;
-		//rrtester(w,n,e,rrcntr);
-		exit(0);
-	}
 
 	if ( (diff = globalWindow - globalOverlap) % 2 != 0 ) // Assign diff, check for constraint
 	{
@@ -117,8 +106,7 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    winNumMax = l / diff;                       // calc num of windows
-	if(thr==0.0) thr = rrmean(rrcntr);			// Calculate RR threshold
+	if(fabs(thr - 0.0) < 1.0e-6) thr = rrmean(rrcntr);			// Calculate RR threshold
     if (verbose)
         cout << "Calculated threshold and number of windows" << endl;
 
@@ -416,83 +404,82 @@ int main(int argc, char **argv)
 
 	/**********************************************************/
 	/*       Construct CDF                                    */
+
+    cout << "Constructing CDF." << endl;
+    double histSum = gsl_histogram_sum(h);
+    vector<int> binTimes;
+
+    if (verbose)
+        printHistogram(h);
+
+    // Find non-zero bins and store their indices in the vector binTimes[]
+    for ( int ii = 0; ii < nBins; ii++ )
+        if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
+            binTimes.push_back(ii);
+
+    if (verbose)
+        cout << "binTimes.size() = " << binTimes.size() << endl;
+
+    // Create vectors to store the x and y histogram values that are
+    //   modified and copied from the histogram information
+    double xTimes[binTimes.size()], yCount[binTimes.size()];
+
+    for ( int j = binTimes.size()-1; j >= 0; j-- )
     {
-        cout << "Constructing CDF." << endl;
-        double histSum = gsl_histogram_sum(h);
-        vector<int> binTimes;
+        yCount[j] = gsl_histogram_get(h,binTimes[j]);
+        xTimes[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
+    }
 
-        if (verbose && false)
-            printHistogram(h);
+    if (verbose)
+        printXY(xTimes,yCount,binTimes.size());
 
-        // Find non-zero bins and store their indices in the vector binTimes[]
-        for ( int ii = 0; ii < nBins; ii++ )
-            if ( gsl_histogram_get(h,ii) )	// If non-zero entry, put in binTimes
-                binTimes.push_back(ii);
+    // Accumulate y component for CDF
+    // --- Look into the accumulate function that's in either numerics or algorithm...
+    cumSumNorm(yCount,binTimes.size(),histSum);
 
-        if (verbose && false)
-            cout << "binTimes.size() = " << binTimes.size() << endl;
-
-        // Create vectors to store the x and y histogram values that are
-        //   modified and copied from the histogram information
-        double xTimes[binTimes.size()], yCount[binTimes.size()];
-
-        for ( int j = binTimes.size()-1; j >= 0; j-- )
+    // Print to file
+    fid.open(outFilename,ios::app);
+    if (fid.is_open())
+    {
+        fid << asctime(timeinfo);
+        for (usInt i = 0; i<binTimes.size(); i++)
+            fid << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
+        fid << "\n\n";
+        fid.close();
+    } else
+    {
+        cerr << "Error: Could not open " << outFilename << endl;
+        cout << "\tPrinting to screen..." << endl;
+        for (usInt i = 0; i<binTimes.size(); i++)
+            cout << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
+    }
+/**********************************************************/
+/*    Perform least square linear fit if chosen           */
+    if (doFit)
+    {
+        for (usInt i = 0; i < binTimes.size(); i++)
         {
-            yCount[j] = gsl_histogram_get(h,binTimes[j]);
-            xTimes[j] = ( range[binTimes[j]] + range[binTimes[j]+1] ) / 2.0;
+            xTimes[i] = log10(xTimes[i]);
+            yCount[i] = log10(yCount[i]);
         }
-
-        if (verbose && false)
+        if (verbose)
             printXY(xTimes,yCount,binTimes.size());
 
-        // Accumulate y component for CDF
-        // --- Look into the accumulate function that's in either numerics or algorithm...
-        cumSumNorm(yCount,binTimes.size(),histSum);
-
-        // Print to file
-        fid.open(outFilename,ios::app);
-        if (fid.is_open())
-        {
-            fid << asctime(timeinfo);
-            for (usInt i = 0; i<binTimes.size(); i++)
-                fid << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
-            fid << "\n\n";
-            fid.close();
-        } else
-        {
-            cerr << "Error: Could not open " << outFilename << endl;
-            cout << "\tPrinting to screen..." << endl;
-            for (usInt i = 0; i<binTimes.size(); i++)
-                cout << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
-        }
-	/**********************************************************/
-	/*    Perform least square linear fit if chosen           */
-        if (doFit)
-        {
-            for (usInt i = 0; i < binTimes.size(); i++)
-            {
-                xTimes[i] = log10(xTimes[i]);
-                yCount[i] = log10(yCount[i]);
-            }
-            if (verbose && false)
-                printXY(xTimes,yCount,binTimes.size());
-
-            double b, m, varb, covbm, varm, sumsq;
-            gsl_fit_linear(xTimes,1,yCount,1, binTimes.size(), &b, &m, \
-                           &varb, &covbm, &varm, &sumsq);
-            double m2 = -1.0 * mlefit(xTimes,binTimes.size());
-            cout.precision(5);
+        double b, m1, varb, covbm, varm, sumsq;
+        gsl_fit_linear(xTimes,1,yCount,1, binTimes.size(), &b, &m1, \
+                       &varb, &covbm, &varm, &sumsq);
+        double m2 = -1.0 * mlefit(xTimes,binTimes.size());
+        cout.precision(5);
 /* Structure the output in terms of strings so that the borders can be more responsive?
- * ... Meaning a function like brdrprintr(char* brderchar, int length);
- */
-            cout.setf(ios::fixed,ios::floatfield);
-            cout << "+--------------------------------------------------------+" << endl;
-            cout << "| Ordinary log-log fit:                                  |" << endl;
-            cout << "| \t(" << m << " +/- " << sqrt(varm) << ")x + (" << b << " +/- " << sqrt(varb) << " ) |" << endl;
-            cout << "| MLE fit:                                               |" << endl;
-            cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "               |" << endl; 
-            cout << "+--------------------------------------------------------+" << endl;
-        }
+* ... Meaning a function like brdrprintr(char* brderchar, int length);
+*/
+        cout.setf(ios::fixed,ios::floatfield);
+        cout << "+--------------------------------------------------------+" << endl;
+        cout << "| Ordinary log-log fit:                                  |" << endl;
+        cout << "| \t(" << m1 << " +/- " << sqrt(varm) << ")x + (" << b << " +/- " << sqrt(varb) << " ) |" << endl;
+        cout << "| MLE fit:                                               |" << endl;
+        cout << "| \t(" << m2 << " +/- " << (m2-1.0)/sqrt(binTimes.size()) << ")x + " << 0.0 << "               |" << endl; 
+        cout << "+--------------------------------------------------------+" << endl;
     }
 
 	/**********************************************************/
@@ -505,8 +492,7 @@ int main(int argc, char **argv)
 	//Summarize results into log
 	if (publish)
 	{
-		double xInit;
-		double yInit;		
+		double xInit = 0.0, yInit = 0.0;
 		input.open(inFilename,ios::in);
 		input >> xInit;
 		input >> yInit;
@@ -515,12 +501,12 @@ int main(int argc, char **argv)
 		ofstream resultsLog("rrstdmp_results.log",ios::app);
 		if (resultsLog.is_open())
 		{
-			resultsLog << k*2.0*M_PI << "," << ge << "," << l << "," \
+			resultsLog << k*TWOPI << "," << ge << "," << l << "," \
                        << globalWindow << "," << globalOverlap << "," \
                        << xInit << "," << yInit << "," << t1 << "," \
                        << asctime(timeinfo);
 //			if (doFit)
-//				resultsLog << m << "," << m2 << ",";
+//				resultsLog << m1 << "," << m2; //** Find out how to add this to log file
 
 			resultsLog.close();
 			if (!silent) cout << "Input summary written to rrstdmp_results.log" << endl;
