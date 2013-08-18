@@ -25,7 +25,7 @@ using std::endl;
 
 extern const double TWOPI;
 extern double k, ge;
-extern int globalWindow, globalOverlap;
+extern const int globalWindow, globalOverlap;
 
 void cmdLineInput(int, char**, char *, char*, long&, double&, int&, \
                   bool&, bool&, bool&);

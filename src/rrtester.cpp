@@ -10,7 +10,7 @@
 
 void rrtester(int& rrcntr)
 {
-	extern int globalWindow;
+	extern const int globalWindow;
 	extern double k;
 	double u[globalWindow], v[globalWindow];
 	double rrmean = 0.0, testdiff = 0.0, tempdiff = 0.0;

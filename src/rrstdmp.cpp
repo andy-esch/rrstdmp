@@ -21,13 +21,9 @@
 #include <iostream>
 #include <vector>
 
-/* TODO: Look at including this into your code
- #include <valarray>
- */
-
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_fit.h>
-#include <omp.h>
+//#include <omp.h>
 
 using std::cout;
 using std::endl;
@@ -42,7 +38,7 @@ typedef unsigned short usInt;
 
 //** Move these down into main() function
 double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern //** declare these as constants
-int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern //** Declare these as constants
+const int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern //** Declare these as constants
 const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
@@ -94,6 +90,7 @@ int main(int argc, char **argv)
 
 	/**********************************************************/	
 	//Initialize variables based on commandline
+    winNumMax = l / diff;
 
 	if ( (diff = globalWindow - globalOverlap) % 2 != 0 ) // Assign diff, check for constraint
 	{
@@ -163,17 +160,16 @@ int main(int argc, char **argv)
 	/**********************************************************/
 	// Kernel of program
 	// Initial data (without overlap)
-	stdmpInit(x,y);
-	rrCurr = rrInit(x,y,rrcntr);
+	stdmpInit(x,y);                         //** Copy code from stdmp.cpp to here
+	rrCurr = rrInit(x,y,rrcntr);            //** Copy code from rr.cpp to here
 
 	// If begin in sticky event, exit event
 	while ( rrCurr > thr && winNumMax != currWin )
 	{
         /* standard map section */
         // stdmp copy from previous run
-#pragma omp parallel for default(none) private(ii)  shared(globalWindow,diff,x,y)
         for ( ii = diff; ii < globalWindow; ii += 2 )
-        { // copies n overlap values -- assumes (w-n) % 2 = 0
+        { // copies n overlap values -- assumes (w-n) % 2 == 0
             x[ii - diff] = x[ii];
             y[ii - diff] = y[ii];
             x[ii - diff + 1] = x[ii + 1];
@@ -267,14 +263,15 @@ int main(int argc, char **argv)
 		publish = false;
 		exit(0);
 	}
-
+//#pragma omp parallel default(none) \
+//                     shared() \
+//                     private()
+//#pragma omp parallel default(none) private(ii,jj,dx,dy,dmax) \
+shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
     while ( currWin < winNumMax )
 	{
         /* standard map section */
         // stdmp copy from previous run
-//#pragma omp parallel default(none) private(ii,jj,dx,dy,dmax) \
-                                   shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
-{
 //    #pragma omp for schedule(static,16)
         for ( ii = diff; ii < globalWindow; ii += 2 )
         { // copies n overlap values -- assumes (w-n) % 2 = 0
@@ -292,15 +289,13 @@ int main(int argc, char **argv)
             y[ii+1] = fmod(y[ii] + k*sin( TWOPI * x[ii] ) + modCorr, 1.0);
             x[ii+1] = fmod(y[ii+1] + x[ii] + modCorr, 1.0);
         }
-//    #pragma omp single
-    {
+
         /* recurrence rate section */
-		rrLast = rrCurr;
+        rrLast = rrCurr;
 
         // Region 1
         RR = rrcntr;
         rrcntr = 0;
-    }
 
         // Region 2
 //    #pragma omp for schedule(static,16)
@@ -332,10 +327,8 @@ int main(int argc, char **argv)
                     RR++;
             }
         }
-} /* End of parallel region */
 
         // Region 3
-//#pragma omp for schedule(guided,16)
         for (ii = 50; ii < 99; ii++)
         {
             for (jj = ii+1; jj < 100; jj++)
@@ -446,7 +439,8 @@ int main(int argc, char **argv)
             fid << log10(xTimes[i]) << '\t' << log10(yCount[i]) << endl;
         fid << "\n\n";
         fid.close();
-    } else
+    }
+    else
     {
         cerr << "Error: Could not open " << outFilename << endl;
         cout << "\tPrinting to screen..." << endl;
@@ -470,9 +464,7 @@ int main(int argc, char **argv)
                        &varb, &covbm, &varm, &sumsq);
         double m2 = -1.0 * mlefit(xTimes,binTimes.size());
         cout.precision(5);
-/* Structure the output in terms of strings so that the borders can be more responsive?
-* ... Meaning a function like brdrprintr(char* brderchar, int length);
-*/
+
         cout.setf(ios::fixed,ios::floatfield);
         cout << "+--------------------------------------------------------+" << endl;
         cout << "| Ordinary log-log fit:                                  |" << endl;

@@ -44,7 +44,7 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
                         ge = atof(optarg);
                         break;
                     case 'w':
-                        globalWindow = atoi(optarg);
+//                        globalWindow = atoi(optarg);
                         if ( (globalOverlap >= globalWindow) && (globalOverlap != 1) )
                         {
                             cerr << "\aError: window is ";
@@ -54,7 +54,7 @@ void cmdLineInput(int argc, char **argv, char * inFilename, char * outFilename, 
                         }
                         break;
                     case 'n':
-                        globalOverlap = atoi(optarg);
+//                        globalOverlap = atoi(optarg);
                         if (globalOverlap<1)
                         {
                             cerr << "\aError: overlap must be greater than or \

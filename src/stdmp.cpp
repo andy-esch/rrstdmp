@@ -17,7 +17,7 @@
 void stdmpInit(double *__restrict__ x, double *__restrict__ y)
 {
 	extern double k;
-	extern int globalWindow;
+	extern const int globalWindow;
 	static double modCorr = 64.0;	// Offset for values that stray below zero
 									// ceil(1.75 + k2pi) is sufficient
 	for ( int i = 1; i < globalWindow; i++ )
@@ -32,7 +32,7 @@ void stdmpInit(double *__restrict__ x, double *__restrict__ y)
  */
 void stdmp(double *__restrict__ x, double *__restrict__ y)
 {
-	extern int globalWindow, globalOverlap;
+	extern const int globalWindow, globalOverlap;
 	extern double k;
 	int i;
 	static double modCorr = 64.0; // See note in stdmpInit above
@@ -62,7 +62,7 @@ void stdmp(double *__restrict__ x, double *__restrict__ y)
 // Calculates the standard map in the opposite direction of stdmp()
 void stdmpBack(double *__restrict__ x, double *__restrict__ y)
 {
-	extern int globalWindow, globalOverlap;
+	extern const int globalWindow, globalOverlap;
 	extern double k;
 	int i;
 	static double modCorr = 100.0; // See note in stdmpInit above

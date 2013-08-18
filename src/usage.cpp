@@ -55,8 +55,8 @@ void usage_rrstdmp(const double e, const double k, long l, \
 	cerr << "    -k <number>   nonlinearity parameter strength, default = " << k*6.283185307179587 << endl;
 	cerr << "    -r <number>   rr sticking event threshold" << endl;
 	cerr << "                    If no value is specified, one will be calculated (highly recommended)." << endl;
-	cerr << "                    Value is based on orbit closest approximating golden KAM curve for " << endl;
-	cerr << "                      the w, n, and k given." << endl;
+	cerr << "                    Value is based on stickiness of the orbit closest approximating golden\n";
+    cerr << "                    KAM curve for the w, n, and k given." << endl;
 	cerr << "    -b <number>   number of histogram bins, default = " << b << endl;
 	cerr << "    -p            turn off publishing of inputs summary to results.log" << endl;
 	cerr << "    -f            perform fits to log-log plot of CDF" << endl;

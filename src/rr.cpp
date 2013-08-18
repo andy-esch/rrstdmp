@@ -19,7 +19,7 @@
 double rr(double *__restrict__ x, double *__restrict__ y, \
 		  int &__restrict__ rrcntr)
 {
-	extern int globalWindow, globalOverlap;
+	extern const int globalWindow, globalOverlap;
 	extern double ge;
 	double dx = 0.0, dy = 0.0, dmax = 0.0, minusge = 1.0 - ge;
 	int RR = rrcntr;	// Transfer previous overlap into current count
@@ -106,7 +106,7 @@ double rr(double *__restrict__ x, double *__restrict__ y, \
 double rrInit(double *__restrict__ x, double *__restrict__ y, \
 			  int &__restrict__ rrcntr) 
 {
-	extern int globalWindow, globalOverlap;
+	extern const int globalWindow, globalOverlap;
 	extern double ge;
 	double dx = 0.0, dy = 0.0, dmax = 0.0;
 	int RR = 0;

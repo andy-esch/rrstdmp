@@ -12,13 +12,13 @@
 double rrmean(int &__restrict__ rrcntr)
 {
 	extern double k;
-	extern int globalWindow;
+	extern const int globalWindow;
 	double u[globalWindow], v[globalWindow];
 	double rrmean = 0.0;
 	const int iters = 20;
 
 	u[0] = 0.0;
-	v[0] = secantApprox(0.25,0.75,1E-11,100,233,89,k);
+	v[0] = secantApprox(0.25,0.75,1.0e-11,100,233,89,k);
 
 	stdmpInit(u,v);
 	rrmean = rrInit(u,v,rrcntr);
