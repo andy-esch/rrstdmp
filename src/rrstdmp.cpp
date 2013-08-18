@@ -28,6 +28,7 @@
 
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_fit.h>
+#include <omp.h>
 
 using std::cout;
 using std::endl;
@@ -74,12 +75,16 @@ int main(int argc, char **argv)
 
     int ii = 0, jj = 0;
     const double modCorr = 64.0;
+    if (verbose)
+        cout << "Initialized recurrence rate variables" << endl;
 
 	// Initialize runtime information
 	time_t t1 = time(NULL), t2, rawTime;        //** Initialize t2 and rawTime to something?
 	struct tm * timeinfo;
 	time( &rawTime );
 	timeinfo = localtime( &rawTime );
+    if (verbose)
+        cout << "Initialized runtime variables" << endl;
 
 	// Initialize histogram basics
 	int nBins = 50;                             //** Perhaps make this something like int(log10(l)) * 10?
@@ -88,6 +93,8 @@ int main(int argc, char **argv)
 	// Read commandline input
     cmdLineInput(argc, argv, inFilename, outFilename, l, thr, nBins, silent, \
                  publish, doFit, rrtest);
+    if (verbose)
+        cout << "Input commandline input" << endl;
 
 	/**********************************************************/	
 	//Initialize variables based on commandline
@@ -109,15 +116,19 @@ int main(int argc, char **argv)
         cerr << "\aError: n must be equal to or smaller than w / 2" << endl;
         exit(0);
     }
-    // allocate arrays based on input
+
     winNumMax = l / diff;                       // calc num of windows
 	if(thr==0.0) thr = rrmean(rrcntr);			// Calculate RR threshold
+    if (verbose)
+        cout << "Calculated threshold and number of windows" << endl;
 
 	// Initialize histogram
 	gsl_histogram * h = gsl_histogram_alloc(nBins);
 	double range[nBins+1];
 	logspace(range, nBins+1, 1.999, log10(static_cast<double>(l)) );
 	gsl_histogram_set_ranges(h,range,nBins+1);
+    if (verbose)
+        cout << "Formed histogram struct" << endl;
 
 	// open initial values file and extract initial values
 	ifstream input(inFilename,ifstream::in);
@@ -137,6 +148,8 @@ int main(int argc, char **argv)
 	input >> x[0];
 	input >> y[0];
 	input.close();
+    if (verbose)
+        cout << "Input initial values from file" << endl;
 
 	/**********************************************************/
 	// Print summary of input values
@@ -170,6 +183,7 @@ int main(int argc, char **argv)
 	{
         /* standard map section */
         // stdmp copy from previous run
+#pragma omp parallel for default(none) private(ii)  shared(globalWindow,diff,x,y)
         for ( ii = diff; ii < globalWindow; ii += 2 )
         { // copies n overlap values -- assumes (w-n) % 2 = 0
             x[ii - diff] = x[ii];
@@ -213,10 +227,10 @@ int main(int argc, char **argv)
                     dy = fabs(1.0 - y[ii] + y[jj]);
                 else
                     dy = fabs(y[ii] - y[jj]);
-                
+
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
-                
+
                 // Apply Threshold
                 if (dmax < ge)
                     RR++;
@@ -240,7 +254,7 @@ int main(int argc, char **argv)
 
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
-                
+
                 // Apply Threshold
                 if (dmax < ge)
                     rrcntr++;
@@ -270,6 +284,10 @@ int main(int argc, char **argv)
 	{
         /* standard map section */
         // stdmp copy from previous run
+//#pragma omp parallel default(none) private(ii,jj,dx,dy,dmax) \
+                                   shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
+{
+//    #pragma omp for schedule(static,16)
         for ( ii = diff; ii < globalWindow; ii += 2 )
         { // copies n overlap values -- assumes (w-n) % 2 = 0
             x[ii - diff] = x[ii];
@@ -277,7 +295,7 @@ int main(int argc, char **argv)
             x[ii - diff + 1] = x[ii + 1];
             y[ii - diff + 1] = y[ii + 1];
         }
-
+//    #pragma omp for schedule(static,16) nowait
         // stdmp calculated new values
         for ( ii = globalOverlap; ii < globalWindow; ii+=2 )
         {	// calculates new non-overlapping values
@@ -286,16 +304,18 @@ int main(int argc, char **argv)
             y[ii+1] = fmod(y[ii] + k*sin( TWOPI * x[ii] ) + modCorr, 1.0);
             x[ii+1] = fmod(y[ii+1] + x[ii] + modCorr, 1.0);
         }
-
+//    #pragma omp single
+    {
         /* recurrence rate section */
 		rrLast = rrCurr;
 
         // Region 1
         RR = rrcntr;
         rrcntr = 0;
+    }
 
         // Region 2
-        //		rrCurr = rr(x,y,rrcntr);
+//    #pragma omp for schedule(static,16)
         for (ii = 0; ii < 50; ii++)
         {
             for (jj = 50; jj < 100; jj++)
@@ -324,8 +344,10 @@ int main(int argc, char **argv)
                     RR++;
             }
         }
+} /* End of parallel region */
 
         // Region 3
+//#pragma omp for schedule(guided,16)
         for (ii = 50; ii < 99; ii++)
         {
             for (jj = ii+1; jj < 100; jj++)
@@ -371,16 +393,16 @@ int main(int argc, char **argv)
 	cout.setf(ios::floatfield);
 	cout << "Final (x,y) = (" << x[globalWindow-1] << ", " << y[globalWindow-1] << ")" << endl;
 
-	if (false)
-	{
-		char buff[50];
-		// get the thread number from inFilename, increment it by one
-		// then put it in %d below
-		int temp = sprintf(buff,"%s_%d",inFilename,1);
-		ofstream strand(buff,ios::out);
-		strand << x[globalWindow-1] << '\t' << y[globalWindow-1] << endl;
-		strand.close();
-	}
+//	if (false)
+//	{
+//		char buff[50];
+//		// get the thread number from inFilename, increment it by one
+//		// then put it in %d below
+//		int temp = sprintf(buff,"%s_%d",inFilename,1);
+//		ofstream strand(buff,ios::out);
+//		strand << x[globalWindow-1] << '\t' << y[globalWindow-1] << endl;
+//		strand.close();
+//	}
 
 	/* Output the preceding values into a file called inputX_n.txt, where
 	 the X refers to the strain number, and the n refers to the segment of the
@@ -463,7 +485,6 @@ int main(int argc, char **argv)
 /* Structure the output in terms of strings so that the borders can be more responsive?
  * ... Meaning a function like brdrprintr(char* brderchar, int length);
  */
-//            std::string outputOne = "| \t(" + m + " +/- " + sqrt(varm) + ")x + (" + b + " +/- " + sqrt(varb) + " ) |\n";
             cout.setf(ios::fixed,ios::floatfield);
             cout << "+--------------------------------------------------------+" << endl;
             cout << "| Ordinary log-log fit:                                  |" << endl;

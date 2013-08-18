@@ -12,7 +12,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <omp.h>
+//#include <omp.h>
 
 extern const double TWOPI;
 
