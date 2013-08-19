@@ -49,6 +49,7 @@ int main(int argc, char **argv)
 
     // Data and variables for run
 	double x[globalWindow], y[globalWindow];            //** What about creating pointers to constant locations const double *ptr (or double const* ptr?)
+    double * ptrx = x, * ptry = y;
 	unsigned int diff = globalWindow - globalOverlap;   // Window size and overlap
 
 	// Program control variables
@@ -202,15 +203,15 @@ int main(int argc, char **argv)
                 //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
 
                 // Calculate recurrences; check if they are on opposite edges
-                if ( x[ii] > minusge && x[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + x[jj]);
+                if ( x[ii] > minusge && ptrx[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
                 else
-                    dx = fabs(x[ii] - x[jj]);
+                    dx = fabs(x[ii] - ptrx[jj]);
 
-                if ( y[ii] > minusge && y[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + y[jj]);
+                if ( y[ii] > minusge && ptry[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + ptry[jj]);
                 else
-                    dy = fabs(y[ii] - y[jj]);
+                    dy = fabs(y[ii] - ptry[jj]);
 
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
@@ -226,15 +227,15 @@ int main(int argc, char **argv)
         {
             for (jj = ii+1; jj < 100; jj++)
             {
-                if ( x[ii] > minusge && x[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + x[jj]);
+                if ( x[ii] > minusge && ptrx[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
                 else
-                    dx = fabs(x[ii] - x[jj]);
+                    dx = fabs(x[ii] - ptrx[jj]);
 
-                if ( y[ii] > minusge && y[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + y[jj]);
+                if ( y[ii] > minusge && ptry[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + ptry[jj]);
                 else
-                    dy = fabs(y[ii] - y[jj]);
+                    dy = fabs(y[ii] - ptry[jj]);
 
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
@@ -267,7 +268,7 @@ int main(int argc, char **argv)
 //                     shared() \
 //                     private()
 //#pragma omp parallel default(none) private(ii,jj,dx,dy,dmax) \
-shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
+//shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
     while ( currWin < winNumMax )
 	{
         /* standard map section */
@@ -309,15 +310,15 @@ shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
                 //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
 
                 // Calculate recurrences; check if they are on opposite edges
-                if ( x[ii] > minusge && x[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + x[jj]);
+                if ( x[ii] > minusge && ptrx[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
                 else
-                    dx = fabs(x[ii] - x[jj]);
+                    dx = fabs(x[ii] - ptrx[jj]);
 
-                if ( y[ii] > minusge && y[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + y[jj]);
+                if ( y[ii] > minusge && ptry[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + ptry[jj]);
                 else
-                    dy = fabs(y[ii] - y[jj]);
+                    dy = fabs(y[ii] - ptry[jj]);
 
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
@@ -333,15 +334,15 @@ shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
         {
             for (jj = ii+1; jj < 100; jj++)
             {
-                if ( x[ii] > minusge && x[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + x[jj]);
+                if ( x[ii] > minusge && ptrx[jj] < ge )
+                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
                 else
-                    dx = fabs(x[ii] - x[jj]);
+                    dx = fabs(x[ii] - ptrx[jj]);
 
-                if ( y[ii] > minusge && y[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + y[jj]);
+                if ( y[ii] > minusge && ptry[jj] < ge )
+                    dy = fabs(1.0 - y[ii] + ptry[jj]);
                 else
-                    dy = fabs(y[ii] - y[jj]);
+                    dy = fabs(y[ii] - ptry[jj]);
 
                 // Maximum Norm
                 dx > dy ? (dmax = dx) : (dmax = dy);
@@ -427,7 +428,7 @@ shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
         printXY(xTimes,yCount,binTimes.size());
 
     // Accumulate y component for CDF
-    // --- Look into the accumulate function that's in either numerics or algorithm...
+    // --- Look into the accumulate function that's in either numerics or algorithm?
     cumSumNorm(yCount,binTimes.size(),histSum);
 
     // Print to file
