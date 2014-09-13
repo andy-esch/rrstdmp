@@ -43,7 +43,7 @@ const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
 {
-	char inFilename[60] = "input1";
+	char inFilename[60] = "inputs/input1";
 	char outFilename[60] = "rr_histogram.txt";
     ofstream fid;                                       // Output file streams //** Does this need a default initialization?  NULL?
 
