@@ -37,8 +37,8 @@ typedef unsigned short usInt;
 
 
 //** Move these down into main() function
-double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	// redefined k, rr threshold; global/extern //** declare these as constants
-const int globalWindow = 100, globalOverlap = 50;         // window, overlap; global/extern //** Declare these as constants
+double k = 0.97163540631/(2.0 * M_PI), ge = 0.05;	    // redefined k, rr threshold; global/extern //** declare these as constants
+const int globalWindow = 100, globalOverlap = 50;       // window, overlap; global/extern //** Declare these as constants
 const double TWOPI = 2.0 * M_PI;
 
 int main(int argc, char **argv)
@@ -93,6 +93,7 @@ int main(int argc, char **argv)
 	//Initialize variables based on commandline
     winNumMax = l / diff;
 
+    //** Change this structure to a try/catch?
 	if ( (diff = globalWindow - globalOverlap) % 2 != 0 ) // Assign diff, check for constraint
 	{
 		cout << "\aError: w - n must be evenly divisible by 2." << endl;
@@ -264,16 +265,11 @@ int main(int argc, char **argv)
 		publish = false;
 		exit(0);
 	}
-//#pragma omp parallel default(none) \
-//                     shared() \
-//                     private()
-//#pragma omp parallel default(none) private(ii,jj,dx,dy,dmax) \
-//shared(globalWindow,diff,x,y,k,rrcntr,globalOverlap,rrLast,rrCurr,RR,minusge,ge)
+
     while ( currWin < winNumMax )
 	{
         /* standard map section */
         // stdmp copy from previous run
-//    #pragma omp for schedule(static,16)
         for ( ii = diff; ii < globalWindow; ii += 2 )
         { // copies n overlap values -- assumes (w-n) % 2 = 0
             x[ii - diff] = x[ii];
@@ -281,7 +277,6 @@ int main(int argc, char **argv)
             x[ii - diff + 1] = x[ii + 1];
             y[ii - diff + 1] = y[ii + 1];
         }
-//    #pragma omp for schedule(static,16) nowait
         // stdmp calculated new values
         for ( ii = globalOverlap; ii < globalWindow; ii+=2 )
         {	// calculates new non-overlapping values
@@ -299,7 +294,6 @@ int main(int argc, char **argv)
         rrcntr = 0;
 
         // Region 2
-//    #pragma omp for schedule(static,16)
         for (ii = 0; ii < 50; ii++)
         {
             for (jj = 50; jj < 100; jj++)
