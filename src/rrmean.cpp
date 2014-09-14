@@ -18,7 +18,8 @@ double rrmean(int &__restrict__ rrcntr)
 	const int iters = 20;
 
 	u[0] = 0.0;
-	v[0] = secantApprox(0.25,0.75,1.0e-11,100,233,89,k);
+	v[0] = secantApprox(0.25,0.75,1.0e-11,100,377,144,k);
+    std::cout << "(x0,y0)_{golden torus} = (" << u[0] << ", " << v[0] << ")" << std::endl;
 
 	stdmpInit(u,v);
 	rrmean = rrInit(u,v,rrcntr);
@@ -69,10 +70,10 @@ double secantApprox(double xi, double xi_1, const double e, const int iters, \
 		else
 		{
 			xlast = xi;
-//			m = n - m; // 1/gam^2 math
-//			n = n + m;
-			n = n + m; // 1/gam math
-			m = n - m;
+            m = n - m; // 1/gam^2 math
+            n = n + m;
+            // n = n + m; // 1/gam math
+            // m = n - m;
 		}
 	}
 	cout << "Convergence not found!" << endl;
