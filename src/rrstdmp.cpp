@@ -23,7 +23,7 @@
 
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_fit.h>
-//#include <omp.h>
+#include <omp.h>
 
 using std::cout;
 using std::endl;
@@ -193,61 +193,75 @@ int main(int argc, char **argv)
         RR = rrcntr;
         rrcntr = 0;
 
-        // Region 2 -- has no overlap with adjacent runs
+
 //		rrCurr = rr(x,y,rrcntr);
-        for (ii = 0; ii < globalOverlap; ii++)
+
+        #pragma omp parallel shared(x,ptrx,y,ptry,ge,minusge,RR,rrcntr) private(ii,jj,dx,dy,dmax)
         {
-            for (jj = 50; jj < globalWindow; jj++)
+            #pragma omp sections
             {
-                //** Are you confident this is sufficient?  (should i and j be swapped?)
-                //** Perhaps it is because we're only considering 1/2 the triangle?
-                //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
-
-                // Calculate recurrences; check if they are on opposite edges
-                if ( x[ii] > minusge && ptrx[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
-                else
-                    dx = fabs(x[ii] - ptrx[jj]);
-
-                if ( y[ii] > minusge && ptry[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + ptry[jj]);
-                else
-                    dy = fabs(y[ii] - ptry[jj]);
-
-                // Maximum Norm
-                dx > dy ? (dmax = dx) : (dmax = dy);
-
-                // Apply Threshold
-                if (dmax < ge)
-                    RR++;
-            }
-        }
-
-        // Region 3 -- overlaps with Region 1 of next run
-        for (ii = 50; ii < 99; ii++)
-        {
-            for (jj = ii+1; jj < 100; jj++)
+            // Region 2 -- has no overlap with adjacent runs
+            #pragma omp section
             {
-                if ( x[ii] > minusge && ptrx[jj] < ge )
-                    dx = fabs(1.0 - x[ii] + ptrx[jj]);
-                else
-                    dx = fabs(x[ii] - ptrx[jj]);
+                for (ii = 0; ii < globalOverlap; ii++)
+                {
+                    for (jj = 50; jj < globalWindow; jj++)
+                    {
+                        //** Are you confident this is sufficient?  (should i and j be swapped?)
+                        //** Perhaps it is because we're only considering 1/2 the triangle?
+                        //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
 
-                if ( y[ii] > minusge && ptry[jj] < ge )
-                    dy = fabs(1.0 - y[ii] + ptry[jj]);
-                else
-                    dy = fabs(y[ii] - ptry[jj]);
+                        // Calculate recurrences; check if they are on opposite edges
+                        if ( x[ii] > minusge && ptrx[jj] < ge )
+                            dx = fabs(1.0 - x[ii] + ptrx[jj]);
+                        else
+                            dx = fabs(x[ii] - ptrx[jj]);
 
-                // Maximum Norm
-                dx > dy ? (dmax = dx) : (dmax = dy);
+                        if ( y[ii] > minusge && ptry[jj] < ge )
+                            dy = fabs(1.0 - y[ii] + ptry[jj]);
+                        else
+                            dy = fabs(y[ii] - ptry[jj]);
 
-                // Apply Threshold
-                if (dmax < ge)
-                    rrcntr++;
-            }
-        }
-        
+                        // Maximum Norm
+                        dx > dy ? (dmax = dx) : (dmax = dy);
+
+                        // Apply Threshold
+                        if (dmax < ge)
+                            RR++;
+                    }
+                }
+            } // End of omp section
+
+            // Region 3 -- overlaps with Region 1 of next run
+            #pragma omp section
+            {
+                for (ii = globalOverlap; ii < (globalWindow - 1); ii++)
+                {
+                    for (jj = ii+1; jj < 100; jj++)
+                    {
+                        if ( x[ii] > minusge && ptrx[jj] < ge )
+                            dx = fabs(1.0 - x[ii] + ptrx[jj]);
+                        else
+                            dx = fabs(x[ii] - ptrx[jj]);
+
+                        if ( y[ii] > minusge && ptry[jj] < ge )
+                            dy = fabs(1.0 - y[ii] + ptry[jj]);
+                        else
+                            dy = fabs(y[ii] - ptry[jj]);
+
+                        // Maximum Norm
+                        dx > dy ? (dmax = dx) : (dmax = dy);
+
+                        // Apply Threshold
+                        if (dmax < ge)
+                            rrcntr++;
+                    }
+                }
+            } // End of omp section
+        } // End of omp sections
+        } // End of omp parallel
         RR += rrcntr;
+
         rrCurr = static_cast<double>(2 * RR + globalWindow) / wsquared;
 
         currWin++;
