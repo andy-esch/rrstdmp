@@ -188,17 +188,17 @@ int main(int argc, char **argv)
         }
 
         /* recurrence rate section */
-        // Region 1
+        // Can these if statements be amenable to #pragma omp sections?
+        // Region 1 -- calculated in Region 3 of previous run
         RR = rrcntr;
         rrcntr = 0;
 
-        // Region 2
+        // Region 2 -- has no overlap with adjacent runs
 //		rrCurr = rr(x,y,rrcntr);
-        for (ii = 0; ii < 50; ii++)
+        for (ii = 0; ii < globalOverlap; ii++)
         {
-            for (jj = 50; jj < 100; jj++)
+            for (jj = 50; jj < globalWindow; jj++)
             {
-                // Can these if statements be amenable to #pragma omp sections?
                 //** Are you confident this is sufficient?  (should i and j be swapped?)
                 //** Perhaps it is because we're only considering 1/2 the triangle?
                 //** Perhaps it's not because we're leaving out x[i] < ge && x[j] > (1.0 - ge)?
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
             }
         }
 
-        // Region 3
+        // Region 3 -- overlaps with Region 1 of next run
         for (ii = 50; ii < 99; ii++)
         {
             for (jj = ii+1; jj < 100; jj++)
