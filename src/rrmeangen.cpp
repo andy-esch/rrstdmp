@@ -33,15 +33,17 @@ using std::ios;
 using std::ofstream;
 using std::ifstream;
 
+// Parameter values
+double e = 0.05, k = 0.97163540631/TWOPI;	// Redefine k to save future computation
+unsigned long int w = 10, n = 1, diff;		// Window size and overlap
+
 int main(int argc, char *argv[])
 {
 	const char* inFilename = "input.txt";
 	const char* outFilename = "rr_histogram.txt";
 	double* x,* y;								// Will be dynamically declared matrices of length w
 	const double TWOPI = 2.0*M_PI;
-	// Parameter values
-	double e = 0.05, k = 0.97163540631/TWOPI;	// Redefine k to save future computation
-	unsigned long int w = 10, n = 1, diff;		// Window size and overlap
+
 	ofstream fid;								// Output file streams
 
 	// Program control variables
@@ -216,7 +218,7 @@ int main(int argc, char *argv[])
 	// Kernel of program
 	
 	// Initial data (without overlap)
-	stdmp(k,x,y,w);
+	stdmp(x,y);
 	rrCurr = rrInit(e,x,y,w,n,rrcntr);
 
 	// If begin in sticky event, exit it
