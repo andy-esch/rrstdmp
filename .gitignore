@@ -12,3 +12,7 @@ rr_histogram.txt
 # OS generated files #
 ######################
 .DS_S*
+
+# Misc other temp files #
+#########################
+**/*-checkpoint.ipynb
